@@ -27,3 +27,5 @@ export class Room {
   @Field(() => Float)
   createdAt: number
 }
+
+export const RoomEntity = SchemaFactory.createForClass(Room)
