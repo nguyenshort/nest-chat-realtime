@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "download-schema": "npx apollo client:download-schema --endpoint=http://localhost:3069/graphql schema.graphql",
     "publish:apollo": "APOLLO_KEY=service:Messages:g7QaAnitigSkYy9FuSRqhQ rover subgraph publish Messages@current --name products --schema ./schema.graphql --routing-url http://products.prod.svc.cluster.local:4001/graphql",
+    "apollo:auto": "npm run download-schema && npm run publish:apollo",
     "stop": "pm2 stop notify-backend"
   },
   "dependencies": {

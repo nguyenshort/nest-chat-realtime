@@ -43,11 +43,6 @@ input CreateLicenseInput {
   appID: String!
 }
 
-input CreateMessageInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
 input CreateRoomInput {
   """Example field (placeholder)"""
   exampleField: Int!
@@ -58,28 +53,14 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-type Message {
-  id: ID!
-  content: String!
-  roomID: String!
-  appID: String!
-  createdAt: Float!
-  from: User!
-  to: User!
-}
-
 type Mutation {
   licenseCreate(input: CreateLicenseInput!): Token!
-  createMessage(createMessageInput: CreateMessageInput!): Message!
-  updateMessage(updateMessageInput: UpdateMessageInput!): Message!
-  removeMessage(id: Int!): Message!
   createRoom(createRoomInput: CreateRoomInput!): Room!
   updateRoom(updateRoomInput: UpdateRoomInput!): Room!
   removeRoom(id: Int!): Room!
 }
 
 type Query {
-  message(id: Int!): Message!
   room(id: Int!): Room!
 }
 
@@ -93,12 +74,6 @@ type Room {
 
 type Token {
   token: String!
-}
-
-input UpdateMessageInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
 }
 
 input UpdateRoomInput {
