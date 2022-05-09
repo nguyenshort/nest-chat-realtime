@@ -43,6 +43,6 @@ export class MessageService implements IMesssageService {
     user: UserDocument,
     message: MessageDocument
   ): Promise<MessageDocument> {
-    return this.model.findOneAndDelete({})
+    return this.model.findOneAndDelete({ from: user._id, _id: message._id })
   }
 }
