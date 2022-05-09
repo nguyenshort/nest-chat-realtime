@@ -4,16 +4,22 @@ import { User } from './entities/user.entity'
 import { CreateUserInput } from '@app/users/dto/create-user.input'
 import { InputValidator } from '@shared/validator/input.validator'
 import { UpdateUserInput } from '@app/users/dto/update-user.input'
-import { Types } from 'mongoose'
+import { UseGuards } from '@nestjs/common'
+import { JWTAuthGuard } from '@guards/jwt.guard'
+import { CurrentLicense } from '@decorators/license.decorator'
+import { LicenseDocument } from '@app/license/entities/license.entity'
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Mutation(() => User)
+  @UseGuards(JWTAuthGuard)
   async userCreate(
-    @Args('input', new InputValidator()) input: CreateUserInput
+    @Args('input', new InputValidator()) input: CreateUserInput,
+    @CurrentLicense() license: LicenseDocument
   ) {
+    // todo: add appID
     return this.usersService.create(input)
   }
 
