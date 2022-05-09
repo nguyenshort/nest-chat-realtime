@@ -1,8 +1,9 @@
 import { ObjectType, Field, Int, ID, Float } from '@nestjs/graphql'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Types } from 'mongoose'
+import { Document, Types } from 'mongoose'
 import { User, UserDocument } from '@app/users/entities/user.entity'
 
+export type RoomDocument = Room & Document
 @ObjectType()
 export class Room {
   @Field(() => ID)
@@ -19,7 +20,9 @@ export class Room {
   })
   avatar: string
 
-  @Prop({ type: [Types.ObjectId], ref: User.name, autopopulate: true })
+  @Prop({
+    type: { type: [Types.ObjectId], ref: User.name, autopopulate: true }
+  })
   @Field(() => [User])
   users: UserDocument[]
 
