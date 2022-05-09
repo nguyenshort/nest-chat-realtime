@@ -1,26 +1,48 @@
 import { Injectable } from '@nestjs/common'
-import { CreateMessageInput } from './dto/create-message.input'
-import { UpdateMessageInput } from './dto/update-message.input'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { Message, MessageDocument } from '@app/message/entities/message.entity'
+import { IMessageCreate, IMesssageService } from '@app/message/types/service'
+import { UserDocument } from '@app/users/entities/user.entity'
 
 @Injectable()
-export class MessageService {
-  create(createMessageInput: CreateMessageInput) {
-    return 'This action adds a new message'
+export class MessageService implements IMesssageService {
+  constructor(
+    @InjectModel(Message.name) private model: Model<MessageDocument>
+  ) {}
+
+  async create(input: IMessageCreate): Promise<MessageDocument> {
+    return this.model.create({
+      from: input.from._id,
+      to: input.to._id,
+      content: input.data.content,
+      appID: input.appID,
+      createdAt: Date.now()
+    })
   }
 
-  findAll() {
-    return `This action returns all message`
+  /**
+   * Đọc tất cả message có thời gian nhỏ hơn message được chỉ định
+   * Tìm kiếm các message có thời gian nhỏ hơn message được chỉ định và không con trong danh sách message đã đọc
+   * Và thêm message đã đọc vào danh sách message đã đọc
+   * @param user
+   * @param anchor
+   */
+  async read(user: UserDocument, anchor: MessageDocument) {
+    return this.model.updateMany(
+      {
+        roomID: anchor.roomID,
+        createdAt: { $lt: anchor.createdAt },
+        'readAt.user': { $ne: user._id }
+      },
+      { $push: { readAt: { user: user._id, time: Date.now() } } }
+    )
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`
-  }
-
-  update(id: number, updateMessageInput: UpdateMessageInput) {
-    return `This action updates a #${id} message`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} message`
+  async remove(
+    user: UserDocument,
+    message: MessageDocument
+  ): Promise<MessageDocument> {
+    return this.model.findOneAndDelete({})
   }
 }

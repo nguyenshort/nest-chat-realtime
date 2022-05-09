@@ -64,6 +64,11 @@ type Query {
   room(id: Int!): Room!
 }
 
+type ReadAt {
+  user: User!
+  time: Float!
+}
+
 type Room {
   id: ID!
   name: String!
