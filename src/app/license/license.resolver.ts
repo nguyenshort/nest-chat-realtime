@@ -1,24 +1,29 @@
 import { Resolver, Mutation, Args } from '@nestjs/graphql'
-import { UserInputError } from 'apollo-server-express'
 
 import { LicenseService } from './license.service'
-import { License } from './entities/license.entity'
+import { Token } from './entities/license.entity'
 import { CreateLicenseInput } from './dto/create-license.input'
 import { InputValidator } from '@shared/validator/input.validator'
 
-@Resolver(() => License)
+@Resolver(() => Token)
 export class LicenseResolver {
   constructor(private readonly licenseService: LicenseService) {}
 
-  @Mutation(() => License)
-  async createLicense(
+  @Mutation(() => Token)
+  async licenseCreate(
     @Args('input', new InputValidator()) input: CreateLicenseInput
   ) {
     const check = await this.licenseService.getOne({ appID: input.appID })
     if (check) {
-      throw new UserInputError('AppID ' + input.appID + ' đã tồn tại')
+      return {
+        token: await this.licenseService.JWTGenerator(check)
+      }
     }
 
-    return this.licenseService.create(input)
+    const license = await this.licenseService.create(input)
+
+    return {
+      token: await this.licenseService.JWTGenerator(license)
+    }
   }
 }

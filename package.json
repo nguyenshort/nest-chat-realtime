@@ -19,8 +19,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "download-schema": "npx apollo client:download-schema --endpoint=http://localhost:3000/graphql schema.graphql",
-    "publish:apollo": "APOLLO_KEY=service:Notify-7f4gp:Kd1qnLVQkAHcZdeCE8SyIA rover subgraph publish Notify-7f4gp@current --name products --schema ./schema.graphql --routing-url http://products.prod.svc.cluster.local:4001/graphql",
+    "download-schema": "npx apollo client:download-schema --endpoint=http://localhost:3069/graphql schema.graphql",
+    "publish:apollo": "APOLLO_KEY=service:Messages:g7QaAnitigSkYy9FuSRqhQ rover subgraph publish Messages@current --name products --schema ./schema.graphql --routing-url http://products.prod.svc.cluster.local:4001/graphql",
     "stop": "pm2 stop notify-backend"
   },
   "dependencies": {

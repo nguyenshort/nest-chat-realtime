@@ -23,10 +23,9 @@ export class User {
   @Field(() => String)
   name: string
 
-  // unique sẽ không có tác dụng
-  @Prop({ required: true, unique: true, index: true })
-  @Field(() => String)
-  email: string
+  @Prop({ required: true })
+  @Field(() => String, { description: 'User ID thật' })
+  userID: string
 
   @Prop()
   @Field(() => String)
