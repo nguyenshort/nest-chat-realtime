@@ -8,7 +8,7 @@ import { PubSubModule } from '@apollo/pubsub.module'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ScheduleModule } from '@nestjs/schedule'
 import { UsersModule } from '@app/users/users.module'
-import { AuthModule } from '@app/auth/auth.module'
+import { LicenseModule } from '@app/license/license.module'
 
 @Module({
   imports: [
@@ -19,7 +19,7 @@ import { AuthModule } from '@app/auth/auth.module'
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     UsersModule,
-    AuthModule
+    LicenseModule
   ],
   controllers: [AppController],
   providers: [AppService]

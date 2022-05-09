@@ -2,17 +2,16 @@ import { Module } from '@nestjs/common'
 import { GraphQLModule } from '@nestjs/graphql'
 import { ApolloDriver } from '@nestjs/apollo'
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core'
-import GraphQLJSON from 'graphql-type-json'
-import { AuthModule } from '@app/auth/auth.module'
-import { AuthService } from '@app/auth/auth.service'
+import { LicenseModule } from '@app/license/license.module'
+import { LicenseService } from '@app/license/license.service'
 
 @Module({
   imports: [
     GraphQLModule.forRootAsync({
-      imports: [AuthModule],
-      inject: [AuthService],
+      imports: [LicenseModule],
+      inject: [LicenseService],
       driver: ApolloDriver,
-      useFactory: (authService: AuthService) => ({
+      useFactory: (licenseService: LicenseService) => ({
         playground: false,
         autoSchemaFile: true,
         debug: true,
@@ -24,7 +23,10 @@ import { AuthService } from '@app/auth/auth.service'
             onConnect: async (context: any) => {
               const { connectionParams, extra } = context
               // user validation will remain the same as in the example above
-              // when using with graphql-ws, additional context value should be stored in the extra fieldx
+              // when using with graphql-ws, additional context value should be stored in the extra field
+              extra.user = await licenseService.checkToken(
+                connectionParams.Authorization
+              )
             }
           },
           context: ({ extra }) => {
@@ -33,7 +35,6 @@ import { AuthService } from '@app/auth/auth.service'
             }
           }
         },
-        resolvers: { JSON: GraphQLJSON },
         context: ({ req }) => ({ req })
       })
     })
