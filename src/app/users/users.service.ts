@@ -27,4 +27,8 @@ export class UsersService {
   async remove(id: string) {
     return this.userModel.findOneAndDelete(id as unknown as Types.ObjectId)
   }
+
+  async findOne(userID: string) {
+    return this.userModel.findOne({ userID: userID })
+  }
 }

@@ -1,10 +1,9 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
 import { UsersService } from './users.service'
 import { User } from './entities/user.entity'
 import { CreateUserInput } from '@app/users/dto/create-user.input'
 import { InputValidator } from '@shared/validator/input.validator'
 import { UpdateUserInput } from '@app/users/dto/update-user.input'
-import { Types } from 'mongoose'
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -27,5 +26,10 @@ export class UsersResolver {
   @Mutation(() => User)
   async userRemove(@Args('id') id: string) {
     return this.usersService.remove(id)
+  }
+
+  @Query(() => User)
+  userDetail(@Args('id', { type: () => String }) userID: string) {
+    return this.usersService.findOne(userID)
   }
 }
