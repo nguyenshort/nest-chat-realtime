@@ -26,7 +26,7 @@ export class License {
   createdAt: number
 }
 
-export const LicenseSchema = SchemaFactory.createForClass(License)
+export const LicenseEntity = SchemaFactory.createForClass(License)
 
 @ObjectType()
 export class Token {

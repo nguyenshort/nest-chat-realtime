@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common'
 import { LicenseService } from './license.service'
 import { LicenseResolver } from './license.resolver'
 import { MongooseModule } from '@nestjs/mongoose'
-import { License, LicenseSchema } from '@app/license/entities/license.entity'
+import { License, LicenseEntity } from '@app/license/entities/license.entity'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { PassportModule } from '@nestjs/passport'
@@ -13,7 +13,7 @@ import { JwtStrategy } from '@passport/jwt.strategy'
     MongooseModule.forFeature([
       {
         name: License.name,
-        schema: LicenseSchema
+        schema: LicenseEntity
       }
     ]),
     PassportModule,
