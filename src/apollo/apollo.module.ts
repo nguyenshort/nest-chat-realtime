@@ -4,6 +4,7 @@ import { ApolloDriver } from '@nestjs/apollo'
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core'
 import { LicenseModule } from '@app/license/license.module'
 import { LicenseService } from '@app/license/license.service'
+import GraphQLJSON from 'graphql-type-json'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { LicenseService } from '@app/license/license.service'
             }
           }
         },
+        resolvers: { JSON: GraphQLJSON },
         context: ({ req }) => ({ req })
       })
     })

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose'
 import { Field, Float, ID, ObjectType } from '@nestjs/graphql'
-
+import GraphQLJSON from 'graphql-type-json'
 export type UserDocument = User & Document
 
 @Schema({
@@ -19,10 +19,6 @@ export class User {
   @Field(() => ID)
   id: string
 
-  @Field(() => String)
-  @Prop({ required: true })
-  origin: string
-
   @Prop({ required: true })
   @Field(() => String)
   name: string
@@ -31,6 +27,14 @@ export class User {
   @Prop({ required: true, unique: true, index: true })
   @Field(() => String)
   email: string
+
+  @Prop()
+  @Field(() => String)
+  appID: string
+
+  @Prop({ type: Object, default: {} })
+  @Field(() => GraphQLJSON)
+  meta: JSON
 
   @Prop()
   @Field(() => String, {
