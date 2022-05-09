@@ -3,16 +3,18 @@ import { RoomService } from './room.service'
 import { Room } from './entities/room.entity'
 import { CreateRoomInput } from './dto/create-room.input'
 import { UpdateRoomInput } from './dto/update-room.input'
+import { InputValidator } from '@shared/validator/input.validator'
 
 @Resolver(() => Room)
 export class RoomResolver {
   constructor(private readonly roomService: RoomService) {}
 
   @Mutation(() => Room)
-  async roomCreate(@Args('createRoomInput') createRoomInput: CreateRoomInput) {
-    console.log(createRoomInput)
-    const d = await this.roomService.create(createRoomInput)
-    console.log(d)
+  async roomCreate(
+    @Args('createRoomInput', new InputValidator())
+    createRoomInput: CreateRoomInput
+  ) {
+    return this.roomService.create(createRoomInput)
   }
 
   @Query(() => [Room], { name: 'room' })

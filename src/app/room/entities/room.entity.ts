@@ -4,6 +4,17 @@ import { Document, Types } from 'mongoose'
 import { User, UserDocument } from '@app/users/entities/user.entity'
 
 export type RoomDocument = Room & Document
+
+@Schema({
+  toJSON: {
+    virtuals: true,
+    getters: true
+  },
+  toObject: {
+    virtuals: true,
+    getters: true
+  }
+})
 @ObjectType()
 export class Room {
   @Field(() => ID)
@@ -21,7 +32,7 @@ export class Room {
   avatar: string
 
   @Prop({
-    type: { type: [Types.ObjectId], ref: User.name, autopopulate: true }
+    type: [{ type: Types.ObjectId, ref: User.name, autopopulate: true }]
   })
   @Field(() => [User])
   users: UserDocument[]

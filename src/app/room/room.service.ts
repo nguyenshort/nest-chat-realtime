@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common'
 import { CreateRoomInput } from './dto/create-room.input'
 import { UpdateRoomInput } from './dto/update-room.input'
-import { Model, Types } from 'mongoose'
+import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { Room, RoomDocument } from '@app/room/entities/room.entity'
 
 @Injectable()
 export class RoomService {
   constructor(@InjectModel(Room.name) private roomModel: Model<RoomDocument>) {}
+
   async create(input: CreateRoomInput) {
     return this.roomModel.create({
       ...input,
