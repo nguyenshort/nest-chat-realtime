@@ -78,6 +78,17 @@ input CreateUserInput {
   userID: String!
 }
 
+input GetMessagesInput {
+  """Room ID"""
+  roomID: String!
+
+  """Giới hạn"""
+  limit: Int!
+
+  """Skip"""
+  offset: Int!
+}
+
 type License {
   id: ID!
 
@@ -109,16 +120,26 @@ type Mutation {
   ): User!
   userRemove(userID: String!): User!
   messageSend(input: CreateMessageInput!, roomId: String!): Message!
+  messageRead(input: ReadMessageInput!): [Message!]!
   roomCreate(input: CreateRoomInput!): Room!
 }
 
 type Query {
   hello: String!
+  messagesByRoom(filter: GetMessagesInput!): [Message!]!
 }
 
 type ReadAt {
   user: User!
   time: Float!
+}
+
+input ReadMessageInput {
+  """Điểm neo"""
+  anchor: String!
+
+  """ID người đọc"""
+  userID: String!
 }
 
 type Room {

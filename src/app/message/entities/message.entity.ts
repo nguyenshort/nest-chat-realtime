@@ -23,7 +23,12 @@ export class Message {
   @Field(() => ID)
   id: string
 
-  @Prop({ type: Types.ObjectId, ref: User.name, autopopulate: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: User.name,
+    autopopulate: true,
+    index: true
+  })
   @Field(() => User)
   from: UserDocument
 
@@ -49,7 +54,20 @@ export class Message {
   @Field(() => License)
   license: LicenseDocument
 
-  @Prop({ default: [] })
+  @Prop({
+    default: [],
+    type: [
+      {
+        user: {
+          type: Types.ObjectId,
+          ref: User.name,
+          autopopulate: true,
+          index: true
+        },
+        time: Number
+      }
+    ]
+  })
   @Field(() => [ReadAt])
   readAt: ReadAt[]
 
