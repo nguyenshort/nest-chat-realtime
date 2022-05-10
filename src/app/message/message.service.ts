@@ -15,8 +15,9 @@ export class MessageService implements IMesssageService {
     return this.model.create({
       from: input.from._id,
       to: input.to._id,
-      content: input.data.content,
-      appID: input.appID,
+      content: input.content,
+      room: input.room._id,
+      appID: input.app._id,
       createdAt: Date.now()
     })
   }
@@ -31,7 +32,7 @@ export class MessageService implements IMesssageService {
   async read(user: UserDocument, anchor: MessageDocument) {
     return this.model.updateMany(
       {
-        roomID: anchor.roomID,
+        room: anchor.room._id,
         createdAt: { $lt: anchor.createdAt },
         'readAt.user': { $ne: user._id }
       },
@@ -44,5 +45,9 @@ export class MessageService implements IMesssageService {
     message: MessageDocument
   ): Promise<MessageDocument> {
     return this.model.findOneAndDelete({ from: user._id, _id: message._id })
+  }
+
+  findMany(filter: object): Promise<MessageDocument[]> {
+    return Promise.resolve([])
   }
 }

@@ -1,8 +1,9 @@
-import { ObjectType, Field, Int, ID, Float } from '@nestjs/graphql'
+import { ObjectType, Field, ID, Float } from '@nestjs/graphql'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { User, UserDocument } from '@app/users/entities/user.entity'
 import { Document, Types } from 'mongoose'
-import { ReadAt } from "@app/message/entities/readAt.entity";
+import { ReadAt } from '@app/message/entities/readAt.entity'
+import { Room, RoomDocument } from '@app/room/entities/room.entity'
 
 export type MessageDocument = Message & Document
 
@@ -33,9 +34,13 @@ export class Message {
   @Field(() => String)
   content: string
 
-  @Prop()
-  @Field(() => String)
-  roomID: string
+  @Prop({
+    type: Types.ObjectId,
+    ref: Room.name,
+    autopopulate: true
+  })
+  @Field(() => Room)
+  room: RoomDocument
 
   @Prop()
   @Field(() => String)

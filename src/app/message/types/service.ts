@@ -1,6 +1,7 @@
 import { UserDocument } from '@app/users/entities/user.entity'
-import { CreateMessageInput } from '@app/message/dto/create-message.input'
 import { MessageDocument } from '@app/message/entities/message.entity'
+import { LicenseDocument } from '@app/license/entities/license.entity'
+import { RoomDocument } from '@app/room/entities/room.entity'
 
 export interface IMesssageService {
   create: (input: IMessageCreate) => Promise<MessageDocument>
@@ -9,11 +10,13 @@ export interface IMesssageService {
     user: UserDocument,
     message: MessageDocument
   ) => Promise<MessageDocument>
+  findMany: (filter: object) => Promise<MessageDocument[]>
 }
 
 export interface IMessageCreate {
   from: UserDocument
   to: UserDocument
-  appID: string
-  data: CreateMessageInput
+  app: LicenseDocument
+  content: string
+  room: RoomDocument
 }

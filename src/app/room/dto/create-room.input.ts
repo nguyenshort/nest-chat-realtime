@@ -1,12 +1,13 @@
-import { InputType, Int, Field, ID } from '@nestjs/graphql'
-import GraphQLJSON from 'graphql-type-json'
+import { InputType, Field } from '@nestjs/graphql'
 
 @InputType()
 export class CreateRoomInput {
-  @Field(() => String, { description: 'tên nhóm' })
+  @Field(() => String, { description: 'Tên nhóm' })
   name: string
-  @Field(() => String, { description: 'ảnh đại diện' })
+
+  @Field(() => String, { description: 'Ảnh đại diện', nullable: true })
   avatar: string
-  @Field(() => [String], { description: 'id users ' })
+
+  @Field(() => [String], { description: 'Mảng userID' })
   users: string[]
 }

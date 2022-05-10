@@ -3,6 +3,7 @@ import { RoomService } from './room.service'
 import { RoomResolver } from './room.resolver'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Room, RoomEntity } from '@app/room/entities/room.entity'
+import { UsersModule } from '@app/users/users.module'
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { Room, RoomEntity } from '@app/room/entities/room.entity'
         name: Room.name,
         schema: RoomEntity
       }
-    ])
+    ]),
+    UsersModule
   ],
   providers: [RoomResolver, RoomService]
 })

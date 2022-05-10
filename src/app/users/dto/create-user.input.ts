@@ -1,5 +1,4 @@
 import { InputType, Field } from '@nestjs/graphql'
-import GraphQLJSON from 'graphql-type-json'
 
 @InputType()
 export class CreateUserInput {
@@ -11,10 +10,4 @@ export class CreateUserInput {
 
   @Field(() => String, { description: 'id người dùng thật' })
   userID: string
-
-  @Field(() => GraphQLJSON, {
-    description: 'thông tin cá nhân',
-    nullable: true
-  })
-  meta: JSON
 }

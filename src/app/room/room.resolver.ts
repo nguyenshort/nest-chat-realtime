@@ -1,39 +1,33 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql'
+import { Resolver, Mutation, Args } from '@nestjs/graphql'
 import { RoomService } from './room.service'
 import { Room } from './entities/room.entity'
 import { CreateRoomInput } from './dto/create-room.input'
-import { UpdateRoomInput } from './dto/update-room.input'
 import { InputValidator } from '@shared/validator/input.validator'
+import { UseGuards } from '@nestjs/common'
+import { JWTAuthGuard } from '@guards/jwt.guard'
+import { CurrentLicense } from '@decorators/license.decorator'
+import { LicenseDocument } from '@app/license/entities/license.entity'
+import { UsersService } from '@app/users/users.service'
 
 @Resolver(() => Room)
 export class RoomResolver {
-  constructor(private readonly roomService: RoomService) {}
+  constructor(
+    private readonly roomService: RoomService,
+    private readonly userService: UsersService
+  ) {}
 
   @Mutation(() => Room)
+  @UseGuards(JWTAuthGuard)
   async roomCreate(
-    @Args('createRoomInput', new InputValidator())
-    createRoomInput: CreateRoomInput
+    @Args('input', new InputValidator()) input: CreateRoomInput,
+    @CurrentLicense() license: LicenseDocument
   ) {
-    return this.roomService.create(createRoomInput)
-  }
+    const _users = await Promise.all(
+      input.users.map((user) =>
+        this.userService.upsert(license, { name: '', userID: user })
+      )
+    )
 
-  @Query(() => [Room], { name: 'room' })
-  findAll() {
-    return this.roomService.findAll()
-  }
-
-  @Query(() => Room, { name: 'room' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.roomService.findOne(id)
-  }
-
-  @Mutation(() => Room)
-  updateRoom(@Args('updateRoomInput') updateRoomInput: UpdateRoomInput) {
-    return this.roomService.update(updateRoomInput.id, updateRoomInput)
-  }
-
-  @Mutation(() => Room)
-  removeRoom(@Args('id', { type: () => Int }) id: number) {
-    return this.roomService.remove(id)
+    return this.roomService.create(license, _users, input)
   }
 }

@@ -9,8 +9,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ScheduleModule } from '@nestjs/schedule'
 import { UsersModule } from '@app/users/users.module'
 import { LicenseModule } from '@app/license/license.module'
-import { MessageModule } from './app/message/message.module';
-import { RoomModule } from './app/room/room.module';
+import { MessageModule } from '@app/message/message.module'
+import { RoomModule } from '@app/room/room.module'
 
 @Module({
   imports: [

@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { UsersResolver } from './users.resolver';
+import { Module } from '@nestjs/common'
+import { UsersService } from './users.service'
+import { UsersResolver } from './users.resolver'
 import { MongooseModule } from '@nestjs/mongoose'
-import { User, UserEntity } from '@app/users/entities/user.entity';
+import { User, UserEntity } from '@app/users/entities/user.entity'
 
 @Module({
   imports: [
@@ -10,9 +10,10 @@ import { User, UserEntity } from '@app/users/entities/user.entity';
       {
         name: User.name,
         schema: UserEntity
-      },
+      }
     ])
   ],
-  providers: [UsersResolver, UsersService]
+  providers: [UsersResolver, UsersService],
+  exports: [UsersService]
 })
 export class UsersModule {}

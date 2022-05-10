@@ -1,34 +1,25 @@
 import { Injectable } from '@nestjs/common'
-import { CreateRoomInput } from './dto/create-room.input'
-import { UpdateRoomInput } from './dto/update-room.input'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { Room, RoomDocument } from '@app/room/entities/room.entity'
+import { ICreateRoom, IRoomServices } from '@app/room/types/services'
+import { LicenseDocument } from '@app/license/entities/license.entity'
+import { UserDocument } from '@app/users/entities/user.entity'
 
 @Injectable()
-export class RoomService {
+export class RoomService implements IRoomServices {
   constructor(@InjectModel(Room.name) private roomModel: Model<RoomDocument>) {}
 
-  async create(input: CreateRoomInput) {
+  async create(
+    license: LicenseDocument,
+    users: UserDocument[],
+    doc: ICreateRoom
+  ) {
     return this.roomModel.create({
-      ...input,
+      ...doc,
+      users: users.map((e) => e._id),
+      license: license._id,
       createdAt: Date.now()
     })
-  }
-
-  findAll() {
-    return `This action returns all room`
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} room`
-  }
-
-  update(id: number, updateRoomInput: UpdateRoomInput) {
-    return `This action updates a #${id} room`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} room`
   }
 }
