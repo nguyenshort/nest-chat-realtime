@@ -89,6 +89,11 @@ input GetMessagesInput {
   offset: Int!
 }
 
+input KickRoomInput {
+  roomID: String!
+  userIDs: [String!]!
+}
+
 type License {
   id: ID!
 
@@ -123,6 +128,7 @@ type Mutation {
   messageSend(input: CreateMessageInput!, roomId: String!): Message!
   messageRead(input: ReadMessageInput!): [Message!]!
   roomCreate(input: CreateRoomInput!): Room!
+  roomKick(input: KickRoomInput!): Room!
 }
 
 type Query {

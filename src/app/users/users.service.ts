@@ -25,6 +25,10 @@ export class UsersService implements IUserService {
     return this.userModel.findOne(filter)
   }
 
+  async findMany(filter: object) {
+    return this.userModel.find(filter)
+  }
+
   async remove(user: UserDocument) {
     return this.userModel.findByIdAndDelete(user._id)
   }

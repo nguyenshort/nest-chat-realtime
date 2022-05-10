@@ -64,7 +64,8 @@ export class Message {
           autopopulate: true,
           index: true
         },
-        time: Number
+        time: Number,
+        _id: false
       }
     ]
   })
