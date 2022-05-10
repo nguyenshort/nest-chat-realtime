@@ -112,6 +112,7 @@ type Message {
 type Mutation {
   licenseCreate(input: CreateLicenseInput!): Token!
   userCreate(input: CreateUserInput!): User!
+  upsertUsers(input: UpsertUsersInput!): [User!]!
   userUpdate(
     input: UpdateUserInput!
 
@@ -165,6 +166,10 @@ input UpdateUserInput {
 
   """ảnh đại diện người dùng"""
   avatar: String
+}
+
+input UpsertUsersInput {
+  users: [CreateUserInput!]!
 }
 
 type User {

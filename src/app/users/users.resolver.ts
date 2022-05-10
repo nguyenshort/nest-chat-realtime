@@ -9,6 +9,7 @@ import { JWTAuthGuard } from '@guards/jwt.guard'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
 import { ForbiddenError } from 'apollo-server-express'
+import { UpsertUsersInput } from '@app/users/dto/upserts-user.input'
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -23,22 +24,23 @@ export class UsersResolver {
     return this.usersService.create(license, input)
   }
 
+  @Mutation(() => [User])
+  @UseGuards(JWTAuthGuard)
+  async upsertUsers(
+    @CurrentLicense() license: LicenseDocument,
+    @Args('input', new InputValidator()) { users }: UpsertUsersInput
+  ) {
+    return Promise.all(users.map((e) => this.usersService.upsert(license, e)))
+  }
+
   @Mutation(() => User)
   @UseGuards(JWTAuthGuard)
   async userUpdate(
     @Args('input', new InputValidator()) input: UpdateUserInput,
-    // Todo: lấy từ contect của socket
     @Args('userID', { description: 'User ID' }) userID: string,
     @CurrentLicense() license: LicenseDocument
   ) {
-    const _user = await this.usersService.findOne({
-      appID: license.appID,
-      userID
-    })
-
-    if (!_user) {
-      throw new ForbiddenError('User not found')
-    }
+    const _user = await this.#getUser(userID, license)
 
     const _merge = Object.assign({}, _user, input)
 
@@ -54,14 +56,7 @@ export class UsersResolver {
     @Args('userID') userID: string,
     @CurrentLicense() license: LicenseDocument
   ) {
-    const _user = await this.usersService.findOne({
-      appID: license.appID,
-      userID
-    })
-
-    if (!_user) {
-      throw new ForbiddenError('User not found')
-    }
+    const _user = await this.#getUser(userID, license)
     return this.usersService.remove(_user)
   }
 
