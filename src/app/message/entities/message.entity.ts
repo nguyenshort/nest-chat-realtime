@@ -4,6 +4,7 @@ import { User, UserDocument } from '@app/users/entities/user.entity'
 import { Document, Types } from 'mongoose'
 import { ReadAt } from '@app/message/entities/readAt.entity'
 import { Room, RoomDocument } from '@app/room/entities/room.entity'
+import { License, LicenseDocument } from '@app/license/entities/license.entity'
 
 export type MessageDocument = Message & Document
 
@@ -22,13 +23,9 @@ export class Message {
   @Field(() => ID)
   id: string
 
-  @Prop({ type: Types.ObjectId, ref: User.name, autopopulate: true })
+  @Prop({ type: Types.ObjectId, ref: User.name, autopopulate: true, index: true })
   @Field(() => User)
   from: UserDocument
-
-  @Prop({ type: Types.ObjectId, ref: User.name, autopopulate: true })
-  @Field(() => User)
-  to: UserDocument
 
   @Prop()
   @Field(() => String)
@@ -37,16 +34,22 @@ export class Message {
   @Prop({
     type: Types.ObjectId,
     ref: Room.name,
-    autopopulate: true
+    autopopulate: true,
+    index: true
   })
   @Field(() => Room)
   room: RoomDocument
 
-  @Prop()
-  @Field(() => String)
-  appID: string
+  @Prop({
+    type: Types.ObjectId,
+    ref: License.name,
+    autopopulate: true,
+    index: true
+  })
+  @Field(() => License)
+  license: LicenseDocument
 
-  @Prop()
+  @Prop({ default: [] })
   @Field(() => [ReadAt])
   readAt: ReadAt[]
 

@@ -22,4 +22,8 @@ export class RoomService implements IRoomServices {
       createdAt: Date.now()
     })
   }
+
+  async getOne(filter: object): Promise<RoomDocument> {
+    return this.roomModel.findOne(filter)
+  }
 }

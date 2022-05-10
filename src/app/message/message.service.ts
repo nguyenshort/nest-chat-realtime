@@ -4,6 +4,8 @@ import { Model } from 'mongoose'
 import { Message, MessageDocument } from '@app/message/entities/message.entity'
 import { IMessageCreate, IMesssageService } from '@app/message/types/service'
 import { UserDocument } from '@app/users/entities/user.entity'
+import { LicenseDocument } from '@app/license/entities/license.entity'
+import { RoomDocument } from '@app/room/entities/room.entity'
 
 @Injectable()
 export class MessageService implements IMesssageService {
@@ -11,13 +13,16 @@ export class MessageService implements IMesssageService {
     @InjectModel(Message.name) private model: Model<MessageDocument>
   ) {}
 
-  async create(input: IMessageCreate): Promise<MessageDocument> {
+  async create(
+    license: LicenseDocument,
+    room: RoomDocument,
+    input: IMessageCreate
+  ): Promise<MessageDocument> {
     return this.model.create({
       from: input.from._id,
-      to: input.to._id,
       content: input.content,
-      room: input.room._id,
-      appID: input.app._id,
+      room: room._id,
+      license: license._id,
       createdAt: Date.now()
     })
   }

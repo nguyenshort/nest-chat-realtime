@@ -48,9 +48,17 @@ input CreateLicenseInput {
   appID: String!
 }
 
+input CreateMessageInput {
+  """User ID người gửi"""
+  from: String!
+
+  """Nội dung tin nhắn"""
+  content: String
+}
+
 input CreateRoomInput {
   """Tên nhóm"""
-  name: String!
+  name: String
 
   """Ảnh đại diện"""
   avatar: String
@@ -70,6 +78,26 @@ input CreateUserInput {
   userID: String!
 }
 
+type License {
+  id: ID!
+
+  """Mã định danh app"""
+  appID: String!
+
+  """Ngày tạo license"""
+  createdAt: Float!
+}
+
+type Message {
+  id: ID!
+  from: User!
+  content: String!
+  room: Room!
+  license: License!
+  readAt: [ReadAt!]!
+  createdAt: Float!
+}
+
 type Mutation {
   licenseCreate(input: CreateLicenseInput!): Token!
   userCreate(input: CreateUserInput!): User!
@@ -80,6 +108,7 @@ type Mutation {
     userID: String!
   ): User!
   userRemove(userID: String!): User!
+  messageSend(input: CreateMessageInput!, roomId: String!): Message!
   roomCreate(input: CreateRoomInput!): Room!
 }
 

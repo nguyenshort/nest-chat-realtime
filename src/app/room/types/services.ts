@@ -8,6 +8,8 @@ export interface IRoomServices {
     users: UserDocument[],
     doc: ICreateRoom
   ) => Promise<RoomDocument>
+
+  getOne: (filter: object) => Promise<RoomDocument>
 }
 
 export interface ICreateRoom {

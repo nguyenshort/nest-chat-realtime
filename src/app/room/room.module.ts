@@ -15,6 +15,7 @@ import { UsersModule } from '@app/users/users.module'
     ]),
     UsersModule
   ],
-  providers: [RoomResolver, RoomService]
+  providers: [RoomResolver, RoomService],
+  exports: [RoomService]
 })
 export class RoomModule {}

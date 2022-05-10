@@ -4,7 +4,11 @@ import { LicenseDocument } from '@app/license/entities/license.entity'
 import { RoomDocument } from '@app/room/entities/room.entity'
 
 export interface IMesssageService {
-  create: (input: IMessageCreate) => Promise<MessageDocument>
+  create: (
+    license: LicenseDocument,
+    room: RoomDocument,
+    input: IMessageCreate
+  ) => Promise<MessageDocument>
   read: (user: UserDocument, anchor: MessageDocument) => Promise<any>
   remove: (
     user: UserDocument,
@@ -15,8 +19,5 @@ export interface IMesssageService {
 
 export interface IMessageCreate {
   from: UserDocument
-  to: UserDocument
-  app: LicenseDocument
   content: string
-  room: RoomDocument
 }

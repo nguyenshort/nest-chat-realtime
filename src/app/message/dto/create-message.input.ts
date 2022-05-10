@@ -1,10 +1,12 @@
 import { InputType, Field } from '@nestjs/graphql'
+import { IsNotEmpty } from 'class-validator'
 
 @InputType()
 export class CreateMessageInput {
-  @Field(() => String, { description: 'Nội dung tin nhắn' })
-  content: string
+  @IsNotEmpty()
+  @Field(() => String, { description: 'User ID người gửi' })
+  from: string
 
-  @Field(() => String, { description: 'ID Phòng' })
-  roomID: string
+  @Field(() => String, { description: 'Nội dung tin nhắn', nullable: true })
+  content: string
 }
