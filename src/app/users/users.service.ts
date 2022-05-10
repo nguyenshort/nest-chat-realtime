@@ -52,7 +52,10 @@ export class UsersService implements IUserService {
         }
       },
       {
-        returnOriginal: true
+        returnOriginal: true,
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true
       }
     )
   }

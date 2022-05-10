@@ -38,6 +38,11 @@ directive @connection(
   filter: [String!]
 ) on FIELD
 
+input CreateConnectInput {
+  """Thông tin của thành viên"""
+  user: CreateUserInput!
+}
+
 input CreateLicenseInput {
   """Mã định danh app"""
   appID: String!
@@ -93,6 +98,10 @@ type Room {
   avatar: String
   users: [User!]!
   createdAt: Float!
+}
+
+type Subscription {
+  connect(input: CreateConnectInput!): User!
 }
 
 type Token {

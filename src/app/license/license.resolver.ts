@@ -1,28 +1,28 @@
-import {
-  Resolver,
-  Mutation,
-  Args,
-  Query,
-  Subscription,
-  Context
-} from '@nestjs/graphql'
+import { Resolver, Mutation, Args, Query, Subscription } from '@nestjs/graphql'
+import { Cache } from 'cache-manager'
 
 import { LicenseService } from './license.service'
 import { Token } from './entities/license.entity'
 import { CreateLicenseInput } from './dto/create-license.input'
 import { InputValidator } from '@shared/validator/input.validator'
 import { PUB_SUB } from '@apollo/pubsub.module'
-import { Inject } from '@nestjs/common'
+import { CACHE_MANAGER, Inject, UseGuards } from '@nestjs/common'
 import { RedisPubSub } from 'graphql-redis-subscriptions'
 import ChanelEnum from '@apollo/chanel.enum'
 import { User } from '@app/users/entities/user.entity'
 import { CreateConnectInput } from '@app/license/dto/create-connect.input'
+import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
+import { SubscriptionGuard } from '@guards/subscription.guard'
+import { withCancel } from '@apollo/with-cancel'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Resolver(() => Token)
 export class LicenseResolver {
   constructor(
     private readonly licenseService: LicenseService,
-    @Inject(PUB_SUB) private pubSub: RedisPubSub
+    @Inject(PUB_SUB) private pubSub: RedisPubSub,
+    private eventEmitter: EventEmitter2,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache
   ) {}
 
   @Mutation(() => Token)
@@ -44,18 +44,21 @@ export class LicenseResolver {
   }
 
   @Subscription(() => User)
+  @UseGuards(SubscriptionGuard)
   async connect(
-    @Args('input', new InputValidator()) input: CreateConnectInput
+    @Args('input', new InputValidator()) input: CreateConnectInput,
+    @SubscriptionLicense() license
   ) {
-    /**
-     * Update lại user hiện có và đánh giấu online
-     */
-    return this.pubSub.asyncIterator(ChanelEnum.CONNECT)
+    // bắn sự kiện online
+    this.eventEmitter.emit('connect:online', { license, user: input.user })
+    return withCancel(this.pubSub.asyncIterator(ChanelEnum.CONNECT, {}), () =>
+      // clear data
+      this.eventEmitter.emit('connect:offline', { license, user: input.user })
+    )
   }
 
   @Query(() => String)
-  hello(@Context() context: any) {
-    console.log('context', context)
+  hello() {
     return 'Hello World!'
   }
 }
