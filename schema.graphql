@@ -44,24 +44,42 @@ input CreateLicenseInput {
 }
 
 input CreateRoomInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """Tên nhóm"""
+  name: String!
+
+  """Ảnh đại diện"""
+  avatar: String
+
+  """Mảng userID"""
+  users: [String!]!
 }
 
-"""
-The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-"""
-scalar JSON
+input CreateUserInput {
+  """tên người dùng"""
+  name: String!
+
+  """ảnh đại diện người dùng"""
+  avatar: String!
+
+  """id người dùng thật"""
+  userID: String!
+}
 
 type Mutation {
   licenseCreate(input: CreateLicenseInput!): Token!
-  createRoom(createRoomInput: CreateRoomInput!): Room!
-  updateRoom(updateRoomInput: UpdateRoomInput!): Room!
-  removeRoom(id: Int!): Room!
+  userCreate(input: CreateUserInput!): User!
+  userUpdate(
+    input: UpdateUserInput!
+
+    """User ID"""
+    userID: String!
+  ): User!
+  userRemove(userID: String!): User!
+  roomCreate(input: CreateRoomInput!): Room!
 }
 
 type Query {
-  room(id: Int!): Room!
+  hello: String!
 }
 
 type ReadAt {
@@ -81,10 +99,12 @@ type Token {
   token: String!
 }
 
-input UpdateRoomInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+input UpdateUserInput {
+  """tên người dùng"""
+  name: String
+
+  """ảnh đại diện người dùng"""
+  avatar: String
 }
 
 type User {
@@ -93,8 +113,6 @@ type User {
 
   """User ID thật"""
   userID: String!
-  appID: String!
-  meta: JSON!
   avatar: String
   createdAt: Float!
 }

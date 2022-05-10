@@ -4,6 +4,7 @@ import { ApolloDriver } from '@nestjs/apollo'
 import { ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core'
 import { LicenseModule } from '@app/license/license.module'
 import { LicenseService } from '@app/license/license.service'
+import { AuthenticationError } from 'apollo-server-express'
 
 @Module({
   imports: [
@@ -18,15 +19,51 @@ import { LicenseService } from '@app/license/license.service'
         cors: true,
         plugins: [ApolloServerPluginLandingPageLocalDefault()],
         subscriptions: {
-          'subscriptions-transport-ws': true,
+          'subscriptions-transport-ws': {
+            onConnect: async ({ Authorization }) => {
+              if (!Authorization) {
+                throw new AuthenticationError(
+                  'You need a license to access this resource'
+                )
+              }
+
+              const currentUser = await licenseService.checkToken(Authorization)
+              if (!currentUser) {
+                throw new AuthenticationError(
+                  'You need a license to access this resource'
+                )
+              }
+
+              // Todo save to redis
+
+              return {
+                currentUser
+              }
+            }
+          },
           'graphql-ws': {
             onConnect: async (context: any) => {
               const { connectionParams, extra } = context
-              // user validation will remain the same as in the example above
-              // when using with graphql-ws, additional context value should be stored in the extra field
-              extra.user = await licenseService.checkToken(
+
+              if (!connectionParams.Authorization) {
+                throw new AuthenticationError(
+                  'You need a license to access this resource'
+                )
+              }
+
+              const currentUser = await licenseService.checkToken(
                 connectionParams.Authorization
               )
+
+              if (!currentUser) {
+                throw new AuthenticationError(
+                  'You need a license to access this resource'
+                )
+              }
+
+              // Todo save to redis
+
+              extra.user = currentUser
             }
           },
           context: ({ extra }) => {

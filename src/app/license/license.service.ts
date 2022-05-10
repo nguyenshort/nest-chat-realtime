@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { JwtService } from '@nestjs/jwt'
 
 import { CreateLicenseInput } from './dto/create-license.input'
+import { AuthenticationError } from "apollo-server-express";
 
 @Injectable()
 export class LicenseService {
@@ -46,7 +47,10 @@ export class LicenseService {
         const payload = await this.jwtService.verifyAsync(
           token.replace('Bearer ', '').trim()
         )
-        return this.JWTVerify(payload.id)
+        const license = await this.JWTVerify(payload.id)
+        if (license) {
+          return license
+        }
       } catch (e) {}
     }
   }
