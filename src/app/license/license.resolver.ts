@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args } from '@nestjs/graphql'
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql'
 
 import { LicenseService } from './license.service'
 import { Token } from './entities/license.entity'
@@ -25,5 +25,10 @@ export class LicenseResolver {
     return {
       token: await this.licenseService.JWTGenerator(license)
     }
+  }
+
+  @Query(() => String)
+  hello() {
+    return 'Hello World!'
   }
 }

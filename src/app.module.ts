@@ -7,6 +7,7 @@ import { ApolloModule } from '@apollo/apollo.module'
 import { PubSubModule } from '@apollo/pubsub.module'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ScheduleModule } from '@nestjs/schedule'
+
 import { UsersModule } from '@app/users/users.module'
 import { LicenseModule } from '@app/license/license.module'
 import { MessageModule } from '@app/message/message.module'
