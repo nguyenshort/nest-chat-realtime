@@ -1,5 +1,6 @@
 enum ChanelEnum {
-  CONNECT = 'CONNECT'
+  CONNECT = 'CONNECT',
+  ROOM = 'ROOM'
 }
 
 export default ChanelEnum

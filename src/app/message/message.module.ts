@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { Message, MessageEntity } from '@app/message/entities/message.entity'
 import { UsersModule } from '@app/users/users.module'
 import { RoomModule } from '@app/room/room.module'
+import { MessageEvent } from '@app/message/message.event'
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { RoomModule } from '@app/room/room.module'
     UsersModule,
     RoomModule
   ],
-  providers: [MessageResolver, MessageService]
+  providers: [MessageResolver, MessageService, MessageEvent]
 })
 export class MessageModule {}

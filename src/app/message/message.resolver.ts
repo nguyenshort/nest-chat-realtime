@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql'
+import { Resolver, Mutation, Args } from '@nestjs/graphql'
 import { MessageService } from './message.service'
 import { Message } from './entities/message.entity'
 import { CreateMessageInput } from '@app/message/dto/create-message.input'
@@ -13,6 +13,7 @@ import { CurrentLicense } from '@decorators/license.decorator'
 import { ForbiddenError } from 'apollo-server-express'
 import { RoomService } from '@app/room/room.service'
 import mongoose from 'mongoose'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Resolver(() => Message)
 export class MessageResolver {
@@ -20,7 +21,8 @@ export class MessageResolver {
     private readonly messageService: MessageService,
     private readonly usersService: UsersService,
     private readonly roomService: RoomService,
-    @Inject(PUB_SUB) private pubSub: RedisPubSub
+    @Inject(PUB_SUB) private pubSub: RedisPubSub,
+    private eventEmitter: EventEmitter2
   ) {}
 
   @Mutation(() => Message)
@@ -45,10 +47,19 @@ export class MessageResolver {
     }
 
     const _room = await this.roomService.getOne({ _id: roomId })
+    if (!_room) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
 
-    return this.messageService.create(license, _room, {
+    const message = await this.messageService.create(license, _room, {
       from: _user,
       content: input.content
     })
+
+    this.eventEmitter.emit('message:added', { message })
+
+    return message
   }
 }

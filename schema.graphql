@@ -131,6 +131,7 @@ type Room {
 
 type Subscription {
   connect(input: CreateConnectInput!): User!
+  roomSubMessage(roomID: String!): Message!
 }
 
 type Token {
