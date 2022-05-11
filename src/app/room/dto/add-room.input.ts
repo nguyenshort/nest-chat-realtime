@@ -1,13 +1,6 @@
 import { InputType, Field } from '@nestjs/graphql'
 import { IsNotEmpty } from 'class-validator'
+import { KickRoomInput } from '@app/room/dto/kick-room.input'
 
 @InputType()
-export class KickRoomInput {
-  @IsNotEmpty()
-  @Field(() => String)
-  roomID: string
-
-  @IsNotEmpty()
-  @Field(() => [String])
-  userIDs: string[]
-}
+export class AddToRoomInput extends KickRoomInput {}

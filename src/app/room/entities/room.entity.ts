@@ -2,7 +2,7 @@ import { ObjectType, Field, Int, ID, Float } from '@nestjs/graphql'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document, Types } from 'mongoose'
 import { User, UserDocument } from '@app/users/entities/user.entity'
-import { License, LicenseDocument } from "@app/license/entities/license.entity";
+import { License, LicenseDocument } from '@app/license/entities/license.entity'
 
 export type RoomDocument = Room & Document
 
@@ -24,8 +24,8 @@ export class Room {
   @Prop({ type: Types.ObjectId, ref: License.name, autopopulate: true })
   license: LicenseDocument
 
-  @Prop()
-  @Field(() => String)
+  @Prop({ default: '' })
+  @Field(() => String, { defaultValue: '' })
   name: string
 
   @Prop()
