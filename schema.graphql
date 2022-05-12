@@ -148,7 +148,8 @@ type Mutation {
 }
 
 type Query {
-  hello: String!
+  version: String!
+  userOnline(userID: String!): UserOnline!
   messagesByRoom(filter: GetMessagesInput!): [Message!]!
   getRooms(input: GetRoomsInput!): [RoomMessages!]!
   roomGet(roomID: String!): Room!
@@ -173,7 +174,7 @@ type Room {
   avatar: String
   users: [User!]!
   createdAt: Float!
-  updatedAt: Float!
+  updatedAt: Float
 }
 
 type RoomMessages {
