@@ -28,9 +28,7 @@ export class RoomService implements IRoomServices {
   }
 
   async update(room: RoomDocument, doc: object): Promise<RoomDocument> {
-    const _room = await this.roomModel.findById(room._id)
-    console.log(_room)
-    return this.roomModel.findOneAndUpdate(room._id, doc, {
+    return this.roomModel.findByIdAndUpdate(room._id, doc, {
       returnOriginal: false
     })
   }
