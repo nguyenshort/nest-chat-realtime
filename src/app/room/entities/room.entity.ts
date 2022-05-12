@@ -45,8 +45,8 @@ export class Room {
   @Field(() => Float)
   createdAt: number
 
-  @Prop()
-  @Field(() => Float)
+  @Prop({ index: true })
+  @Field(() => Float, { nullable: true, defaultValue: Date.now() })
   updatedAt: number
 }
 
