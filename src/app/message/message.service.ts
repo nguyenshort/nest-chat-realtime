@@ -60,6 +60,10 @@ export class MessageService {
     skip: number,
     limit: number
   ): Promise<MessageDocument[]> {
-    return this.model.find(filter).skip(skip).limit(limit)
+    return this.model
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
   }
 }

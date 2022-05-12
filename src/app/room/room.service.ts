@@ -28,6 +28,90 @@ export class RoomService implements IRoomServices {
   }
 
   async update(room: RoomDocument, doc: object): Promise<RoomDocument> {
-    return this.roomModel.findOneAndUpdate(room._id, doc, { new: true })
+    const _room = await this.roomModel.findById(room._id)
+    console.log(_room)
+    return this.roomModel.findOneAndUpdate(room._id, doc, {
+      returnOriginal: false
+    })
+  }
+
+  async getMany(
+    filter: object,
+    skip: number,
+    limit: number
+  ): Promise<RoomDocument[]> {
+    return this.roomModel.find(filter).skip(skip).limit(limit)
+  }
+
+  // pipeline quá nhiều
+  async getWidthMessage(
+    filter: object,
+    skip: number,
+    limit: number
+  ): Promise<RoomDocument[]> {
+    return this.roomModel.aggregate([
+      { $match: filter },
+      {
+        $lookup: {
+          from: 'messages',
+          localField: '_id',
+          foreignField: 'room',
+          as: 'messages',
+          pipeline: [
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 1
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'from',
+                foreignField: '_id',
+                as: 'from'
+              }
+            },
+            {
+              $lookup: {
+                from: 'licenses',
+                localField: 'license',
+                foreignField: '_id',
+                as: 'license'
+              }
+            },
+            {
+              $unwind: '$from'
+            },
+            {
+              $unwind: '$license'
+            },
+            {
+              $replaceRoot: {
+                newRoot: {
+                  $mergeObjects: ['$$ROOT', { id: '$_id' }]
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'users',
+          foreignField: '_id',
+          as: 'users'
+        }
+      },
+      {
+        $unwind: '$messages'
+      },
+      { $sort: { updatedAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    ])
   }
 }

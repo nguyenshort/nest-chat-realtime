@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args, Subscription } from '@nestjs/graphql'
+import { Resolver, Mutation, Args, Subscription, Query } from '@nestjs/graphql'
 import { RoomService } from './room.service'
 import { Room } from './entities/room.entity'
 import { CreateRoomInput } from './dto/create-room.input'
@@ -23,6 +23,30 @@ export class RoomResolver {
     private readonly userService: UsersService,
     @Inject(PUB_SUB) private pubSub: RedisPubSub
   ) {}
+
+  @Query(() => Room)
+  @UseGuards(JWTAuthGuard)
+  async roomGet(
+    @Args('roomID', new InputValidator()) roomID: string,
+    @CurrentLicense() license: LicenseDocument
+  ) {
+    if (!mongoose.Types.ObjectId.isValid(roomID)) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+
+    const _room = await this.roomService.getOne({
+      _id: roomID,
+      license: license._id
+    })
+    if (!_room) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+    return _room
+  }
 
   @Mutation(() => Room)
   @UseGuards(JWTAuthGuard)

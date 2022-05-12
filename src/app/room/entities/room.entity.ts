@@ -44,6 +44,10 @@ export class Room {
   @Prop()
   @Field(() => Float)
   createdAt: number
+
+  @Prop()
+  @Field(() => Float)
+  updatedAt: number
 }
 
 export const RoomEntity = SchemaFactory.createForClass(Room)

@@ -89,6 +89,16 @@ input GetMessagesInput {
   offset: Int!
 }
 
+input GetRoomsInput {
+  userID: String!
+
+  """Giới hạn"""
+  limit: Int!
+
+  """Skip"""
+  offset: Int!
+}
+
 input KickRoomInput {
   roomID: String!
   userIDs: [String!]!
@@ -134,6 +144,8 @@ type Mutation {
 type Query {
   hello: String!
   messagesByRoom(filter: GetMessagesInput!): [Message!]!
+  getRooms(input: GetRoomsInput!): [RoomMessages!]!
+  roomGet(roomID: String!): Room!
 }
 
 type ReadAt {
@@ -155,6 +167,12 @@ type Room {
   avatar: String
   users: [User!]!
   createdAt: Float!
+  updatedAt: Float!
+}
+
+type RoomMessages {
+  room: Room!
+  messages: [Message!]!
 }
 
 type Subscription {

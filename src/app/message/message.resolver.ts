@@ -16,6 +16,8 @@ import mongoose from 'mongoose'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ReadMessageInput } from '@app/message/dto/read-message.input'
 import { GetMessagesInput } from '@app/message/dto/messages.input'
+import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
+import { RoomMessages } from '@app/room/entities/room-messages.entity'
 
 @Resolver(() => Message)
 export class MessageResolver {
@@ -130,10 +132,32 @@ export class MessageResolver {
       )
     }
 
-    return this.messageService.getMany(
-      { room: _room._id },
-      filter.offset,
-      filter.limit
+    return (
+      await this.messageService.getMany(
+        { room: _room._id },
+        filter.offset,
+        filter.limit
+      )
+    ).reverse()
+  }
+
+  @Query(() => [RoomMessages])
+  @UseGuards(JWTAuthGuard)
+  async getRooms(@Args('input', new InputValidator()) input: GetRoomsInput) {
+    const _user = await this.usersService.findOne({ userID: input.userID })
+    if (!_user) {
+      throw new ForbiddenError('User not found')
+    }
+    const _rooms = await this.roomService.getMany(
+      { users: _user._id },
+      input.offset,
+      input.limit
+    )
+    return Promise.all(
+      _rooms.map(async (room) => ({
+        room,
+        messages: await this.messageService.getMany({ room: room._id }, 0, 1)
+      }))
     )
   }
 }
