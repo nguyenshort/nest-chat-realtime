@@ -113,8 +113,5 @@ export class RoomService implements IRoomServices {
       { $skip: skip },
       { $limit: limit }
     ])
-    return this.roomModel.findOneAndUpdate(room._id, doc, {
-      returnOriginal: false
-    })
   }
 }
