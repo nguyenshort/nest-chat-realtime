@@ -4,6 +4,7 @@ import { RoomResolver } from './room.resolver'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Room, RoomEntity } from '@app/room/entities/room.entity'
 import { UsersModule } from '@app/users/users.module'
+import { RedisCacheModule } from '@cache/cache.module'
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { UsersModule } from '@app/users/users.module'
         schema: RoomEntity
       }
     ]),
-    UsersModule
+    UsersModule,
+    RedisCacheModule
   ],
   providers: [RoomResolver, RoomService],
   exports: [RoomService]

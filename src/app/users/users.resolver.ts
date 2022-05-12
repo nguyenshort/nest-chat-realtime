@@ -1,10 +1,10 @@
-import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql'
+import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql'
 import { UsersService } from './users.service'
 import { User } from './entities/user.entity'
 import { CreateUserInput } from '@app/users/dto/create-user.input'
 import { InputValidator } from '@shared/validator/input.validator'
 import { UpdateUserInput } from '@app/users/dto/update-user.input'
-import { Inject, UseGuards } from '@nestjs/common'
+import { CACHE_MANAGER, Inject, UseGuards } from '@nestjs/common'
 import { JWTAuthGuard } from '@guards/jwt.guard'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
@@ -16,13 +16,31 @@ import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
 import { PUB_SUB } from '@apollo/pubsub.module'
 import { RedisPubSub } from 'graphql-redis-subscriptions'
 import chanelEnum from '@apollo/chanel.enum'
+import { Cache } from 'cache-manager'
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
-    @Inject(PUB_SUB) private pubSub: RedisPubSub
+    @Inject(PUB_SUB) private pubSub: RedisPubSub,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache
   ) {}
+
+  @Query(() => UserOnline)
+  @UseGuards(JWTAuthGuard)
+  async userOnline(
+    @CurrentLicense() license: LicenseDocument,
+    @Args('userID') userID: string
+  ) {
+    const _user = await this.#getUser(userID, license)
+    const _online =
+      (await this.cache.get<string[]>(`${license.appID}_online`)) || []
+
+    return {
+      user: _user,
+      isOnline: _online.includes(_user.userID)
+    }
+  }
 
   @Mutation(() => User)
   @UseGuards(JWTAuthGuard)

@@ -58,7 +58,7 @@ export class LicenseResolver {
   }
 
   @Query(() => String)
-  hello() {
-    return 'Hello World!'
+  version() {
+    return '0.0.1'
   }
 }
