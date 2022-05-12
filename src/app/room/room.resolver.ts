@@ -15,6 +15,7 @@ import { PUB_SUB } from '@apollo/pubsub.module'
 import { RedisPubSub } from 'graphql-redis-subscriptions'
 import ChanelEnum from '@apollo/chanel.enum'
 import { KickRoomInput } from '@app/room/dto/kick-room.input'
+import { AddToRoomInput } from '@app/room/dto/add-room.input'
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -89,6 +90,32 @@ export class RoomResolver {
     })
   }
 
+  @Mutation(() => Room)
+  @UseGuards(JWTAuthGuard)
+  async roomAdd(
+    @Args('input', new InputValidator()) input: AddToRoomInput,
+    @CurrentLicense() license: LicenseDocument
+  ) {
+    const room = await this.roomService.getOne({
+      _id: input.roomID,
+      license: license._id
+    })
+    if (!room) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+    const _users = await this.userService.findMany({
+      userID: { $in: input.userIDs },
+      license: license._id
+    })
+
+    return this.roomService.update(room, {
+      $addToSet: {
+        users: { $each: _users.map((user) => user._id) }
+      }
+    })
+  }
   @Subscription(() => Message)
   async roomSubMessage(@Args('roomID') roomID: string) {
     if (!mongoose.Types.ObjectId.isValid(roomID)) {
