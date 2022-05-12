@@ -1,19 +1,28 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql'
+import { Args, Mutation, Resolver, Subscription } from '@nestjs/graphql'
 import { UsersService } from './users.service'
 import { User } from './entities/user.entity'
 import { CreateUserInput } from '@app/users/dto/create-user.input'
 import { InputValidator } from '@shared/validator/input.validator'
 import { UpdateUserInput } from '@app/users/dto/update-user.input'
-import { UseGuards } from '@nestjs/common'
+import { Inject, UseGuards } from '@nestjs/common'
 import { JWTAuthGuard } from '@guards/jwt.guard'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
 import { ForbiddenError } from 'apollo-server-express'
 import { UpsertUsersInput } from '@app/users/dto/upserts-user.input'
+import { UserOnline } from '@app/users/entities/user-online.entity'
+import { SubscriptionGuard } from '@guards/subscription.guard'
+import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
+import { PUB_SUB } from '@apollo/pubsub.module'
+import { RedisPubSub } from 'graphql-redis-subscriptions'
+import chanelEnum from '@apollo/chanel.enum'
 
 @Resolver(() => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(PUB_SUB) private pubSub: RedisPubSub
+  ) {}
 
   @Mutation(() => User)
   @UseGuards(JWTAuthGuard)
@@ -73,5 +82,16 @@ export class UsersResolver {
       throw new ForbiddenError('User not found')
     }
     return _user
+  }
+
+  @Subscription(() => UserOnline)
+  @UseGuards(SubscriptionGuard)
+  async subUserOnline(
+    @Args('userID') userID: string,
+    @SubscriptionLicense() license: LicenseDocument
+  ) {
+    await this.#getUser(userID, license)
+
+    return this.pubSub.asyncIterator(chanelEnum.USER_ONLINE)
   }
 }

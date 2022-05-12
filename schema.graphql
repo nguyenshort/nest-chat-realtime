@@ -38,6 +38,11 @@ directive @connection(
   filter: [String!]
 ) on FIELD
 
+input AddToRoomInput {
+  roomID: String!
+  userIDs: [String!]!
+}
+
 input CreateConnectInput {
   """Thông tin của thành viên"""
   user: CreateUserInput!
@@ -139,6 +144,7 @@ type Mutation {
   messageRead(input: ReadMessageInput!): [Message!]!
   roomCreate(input: CreateRoomInput!): Room!
   roomKick(input: KickRoomInput!): Room!
+  roomAdd(input: AddToRoomInput!): Room!
 }
 
 type Query {
@@ -177,6 +183,7 @@ type RoomMessages {
 
 type Subscription {
   connect(input: CreateConnectInput!): User!
+  subUserOnline(userID: String!): UserOnline!
   roomSubMessage(roomID: String!): Message!
 }
 
@@ -204,4 +211,9 @@ type User {
   userID: String!
   avatar: String
   createdAt: Float!
+}
+
+type UserOnline {
+  user: User!
+  isOnline: Boolean!
 }

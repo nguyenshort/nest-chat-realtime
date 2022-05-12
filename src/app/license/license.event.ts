@@ -5,6 +5,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions'
 import { IConnectOffline, IConnectOnline } from '@app/license/types/event'
 import { Cache } from 'cache-manager'
 import { UsersService } from '@app/users/users.service'
+import chanelEnum from '@apollo/chanel.enum'
 
 @Injectable()
 export class LicenseEvent {
@@ -25,7 +26,10 @@ export class LicenseEvent {
     }
 
     // cập nhật user
-    await this.usersService.upsert(license, user)
+    const _user = await this.usersService.upsert(license, user)
+    await this.pubSub.publish(chanelEnum.USER_ONLINE, {
+      subUserOnline: { user: _user, isOnline: true }
+    })
   }
 
   @OnEvent('connect:offline')
@@ -34,5 +38,14 @@ export class LicenseEvent {
       (await this.cache.get<string[]>(`${license.appID}_online`)) || []
     _online.splice(_online.indexOf(user.userID), 1)
     await this.cache.set(`${license.appID}_online`, _online)
+
+    // cập nhật user
+    const _user = await this.usersService.findOne({
+      userID: user.userID,
+      licenseID: license._id
+    })
+    await this.pubSub.publish(chanelEnum.USER_ONLINE, {
+      subUserOnline: { user: _user, isOnline: false }
+    })
   }
 }
