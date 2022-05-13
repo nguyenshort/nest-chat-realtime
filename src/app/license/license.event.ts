@@ -26,6 +26,7 @@ export class LicenseEvent {
 
     // cập nhật user
     const _user = await this.usersService.upsert(license, user)
+    // bắn sự kiện online
     await this.pubSub.publish(chanelEnum.USER_ONLINE, {
       subUserOnline: { user: _user, isOnline: true }
     })

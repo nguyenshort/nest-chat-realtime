@@ -16,13 +16,18 @@ import { RedisPubSub } from 'graphql-redis-subscriptions'
 import ChanelEnum from '@apollo/chanel.enum'
 import { KickRoomInput } from '@app/room/dto/kick-room.input'
 import { AddToRoomInput } from '@app/room/dto/add-room.input'
+import { RoomOnlines } from '@app/room/entities/room-info.entity'
+import { SubscriptionGuard } from '@guards/subscription.guard'
+import { EventEmitter2 } from '@nestjs/event-emitter'
+import { IRoomJoinEvent } from '@app/room/types/events'
 
 @Resolver(() => Room)
 export class RoomResolver {
   constructor(
     private readonly roomService: RoomService,
     private readonly userService: UsersService,
-    @Inject(PUB_SUB) private pubSub: RedisPubSub
+    @Inject(PUB_SUB) private pubSub: RedisPubSub,
+    private eventEmitter: EventEmitter2
   ) {}
 
   @Query(() => Room)
@@ -116,8 +121,30 @@ export class RoomResolver {
       }
     })
   }
+
   @Subscription(() => Message)
   async roomSubMessage(@Args('roomID') roomID: string) {
+    await this.#getRoonByID(roomID)
+
+    return this.pubSub.asyncIterator(ChanelEnum.ROOM)
+  }
+
+  @Subscription(() => RoomOnlines)
+  @UseGuards(SubscriptionGuard)
+  async roomOnlines(@Args('roomID') roomID: string) {
+    const room = await this.#getRoonByID(roomID)
+    //Bắn về chính event sau 1 giây
+    setTimeout(() => {
+      // Do something after 1 second
+      this.eventEmitter.emit('room:joined', { room } as IRoomJoinEvent)
+    }, 2000)
+    return this.pubSub.asyncIterator(ChanelEnum.ROOM_ONLINES)
+  }
+
+  /**
+   * Helper
+   */
+  async #getRoonByID(roomID: string) {
     if (!mongoose.Types.ObjectId.isValid(roomID)) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
@@ -130,7 +157,6 @@ export class RoomResolver {
         'You are not allowed to send message to this room'
       )
     }
-
-    return this.pubSub.asyncIterator(ChanelEnum.ROOM)
+    return _room
   }
 }
