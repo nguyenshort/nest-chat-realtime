@@ -19,11 +19,10 @@ export class LicenseEvent {
   async onOnline({ license, user }: IConnectOnline) {
     const _online =
       (await this.cache.get<string[]>(`${license.appID}_online`)) || []
+
     // gi đè filed nếu có
-    if (!_online.includes(user.userID)) {
-      _online.push(user.userID)
-      await this.cache.set(`${license.appID}_online`, _online)
-    }
+    const _newOnlines = [String(user.userID)].concat(_online)
+    await this.cache.set(`${license.appID}_online`, [...new Set(_newOnlines)])
 
     // cập nhật user
     const _user = await this.usersService.upsert(license, user)
