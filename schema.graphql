@@ -152,7 +152,7 @@ type Query {
   userOnline(userID: String!): UserOnline!
   messagesByRoom(filter: GetMessagesInput!): [Message!]!
   getRooms(input: GetRoomsInput!): [RoomMessages!]!
-  roomGet(roomID: String!): Room!
+  roomGet(roomID: String!, userID: String!): Room!
 }
 
 type ReadAt {
@@ -182,10 +182,16 @@ type RoomMessages {
   messages: [Message!]!
 }
 
+type RoomOnlines {
+  room: Room!
+  onlines: [String!]!
+}
+
 type Subscription {
   connect(input: CreateConnectInput!): User!
   subUserOnline(userID: String!): UserOnline!
-  roomSubMessage(roomID: String!): Message!
+  roomSubMessage(roomID: String!, userID: String!): Message!
+  roomOnlines(roomID: String!, userID: String!): RoomOnlines!
 }
 
 type Token {

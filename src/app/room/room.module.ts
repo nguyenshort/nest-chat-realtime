@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { Room, RoomEntity } from '@app/room/entities/room.entity'
 import { UsersModule } from '@app/users/users.module'
 import { RedisCacheModule } from '@cache/cache.module'
+import { RoomEvents } from '@app/room/room.event'
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { RedisCacheModule } from '@cache/cache.module'
     UsersModule,
     RedisCacheModule
   ],
-  providers: [RoomResolver, RoomService],
+  providers: [RoomResolver, RoomService, RoomEvents],
   exports: [RoomService]
 })
 export class RoomModule {}

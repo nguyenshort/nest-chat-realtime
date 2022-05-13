@@ -19,7 +19,10 @@ import { AddToRoomInput } from '@app/room/dto/add-room.input'
 import { RoomOnlines } from '@app/room/entities/room-info.entity'
 import { SubscriptionGuard } from '@guards/subscription.guard'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { IRoomJoinEvent } from '@app/room/types/events'
+import { IRoomJoinEvent, IRoomLeftEvent } from '@app/room/types/events'
+import { withCancel } from '@apollo/with-cancel'
+import { UserDocument } from '@app/users/entities/user.entity'
+import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -34,8 +37,11 @@ export class RoomResolver {
   @UseGuards(JWTAuthGuard)
   async roomGet(
     @Args('roomID', new InputValidator()) roomID: string,
+    @Args('userID', new InputValidator()) userID: string,
     @CurrentLicense() license: LicenseDocument
   ) {
+    const _user = await this.#getUserByID(userID, license)
+
     if (!mongoose.Types.ObjectId.isValid(roomID)) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
@@ -44,13 +50,20 @@ export class RoomResolver {
 
     const _room = await this.roomService.getOne({
       _id: roomID,
-      license: license._id
+      license: license._id, //, check if user is in room
+      users: _user._id
     })
     if (!_room) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
       )
     }
+
+    this.eventEmitter.emit('room:joined', {
+      room: _room,
+      user: _user
+    } as IRoomJoinEvent)
+
     return _room
   }
 
@@ -123,40 +136,75 @@ export class RoomResolver {
   }
 
   @Subscription(() => Message)
-  async roomSubMessage(@Args('roomID') roomID: string) {
-    await this.#getRoonByID(roomID)
+  async roomSubMessage(
+    @Args('roomID') roomID: string,
+    @Args('userID', new InputValidator()) userID: string,
+    @SubscriptionLicense() license: LicenseDocument
+  ) {
+    const _user = await this.#getUserByID(userID, license)
+    await this.#getRoomByID(roomID, license, _user)
 
     return this.pubSub.asyncIterator(ChanelEnum.ROOM)
   }
 
   @Subscription(() => RoomOnlines)
   @UseGuards(SubscriptionGuard)
-  async roomOnlines(@Args('roomID') roomID: string) {
-    const room = await this.#getRoonByID(roomID)
+  async roomOnlines(
+    @Args('roomID') roomID: string,
+    @Args('userID', new InputValidator()) userID: string,
+    @SubscriptionLicense() license: LicenseDocument
+  ) {
+    const user = await this.#getUserByID(userID, license)
+    const room = await this.#getRoomByID(roomID, license, user)
     //Bắn về chính event sau 1 giây
     setTimeout(() => {
       // Do something after 1 second
-      this.eventEmitter.emit('room:joined', { room } as IRoomJoinEvent)
+      this.eventEmitter.emit('room:joined', { room, user } as IRoomJoinEvent)
     }, 2000)
-    return this.pubSub.asyncIterator(ChanelEnum.ROOM_ONLINES)
+    return withCancel(
+      this.pubSub.asyncIterator(ChanelEnum.ROOM_ONLINES),
+      () => {
+        this.eventEmitter.emit('room:left', { room, user } as IRoomLeftEvent)
+      }
+    )
   }
 
   /**
    * Helper
    */
-  async #getRoonByID(roomID: string) {
+  async #getRoomByID(
+    roomID: string,
+    license: LicenseDocument,
+    user: UserDocument
+  ) {
     if (!mongoose.Types.ObjectId.isValid(roomID)) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
       )
     }
 
-    const _room = await this.roomService.getOne({ _id: roomID })
+    const _room = await this.roomService.getOne({
+      _id: roomID,
+      license: license._id,
+      users: user._id
+    })
     if (!_room) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
       )
     }
     return _room
+  }
+
+  async #getUserByID(userID: string, license: LicenseDocument) {
+    const _user = await this.userService.findOne({
+      userID,
+      license: license._id
+    })
+
+    if (!_user) {
+      throw new ForbiddenError('User not found')
+    }
+    return _user
   }
 }

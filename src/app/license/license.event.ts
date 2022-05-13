@@ -6,6 +6,7 @@ import { IConnectOffline, IConnectOnline } from '@app/license/types/event'
 import { Cache } from 'cache-manager'
 import { UsersService } from '@app/users/users.service'
 import chanelEnum from '@apollo/chanel.enum'
+import { CacheKey } from '@cache/cache.key'
 
 @Injectable()
 export class LicenseEvent {
@@ -17,12 +18,13 @@ export class LicenseEvent {
 
   @OnEvent('connect:online')
   async onOnline({ license, user }: IConnectOnline) {
-    const _online =
-      (await this.cache.get<string[]>(`${license.appID}_online`)) || []
+    const appKey = CacheKey.appOnlines(license)
+
+    const _online = (await this.cache.get<string[]>(appKey)) || []
 
     // gi đè filed nếu có
     const _newOnlines = [String(user.userID)].concat(_online)
-    await this.cache.set(`${license.appID}_online`, [...new Set(_newOnlines)])
+    await this.cache.set(appKey, [...new Set(_newOnlines)])
 
     // cập nhật user
     const _user = await this.usersService.upsert(license, user)
@@ -34,10 +36,11 @@ export class LicenseEvent {
 
   @OnEvent('connect:offline')
   async onOffline({ license, user }: IConnectOffline) {
-    const _online =
-      (await this.cache.get<string[]>(`${license.appID}_online`)) || []
+    const appKey = CacheKey.appOnlines(license)
+
+    const _online = (await this.cache.get<string[]>(appKey)) || []
     _online.splice(_online.indexOf(user.userID), 1)
-    await this.cache.set(`${license.appID}_online`, _online)
+    await this.cache.set(appKey, _online)
 
     // cập nhật user
     const _user = await this.usersService.findOne({

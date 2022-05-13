@@ -24,6 +24,6 @@ module.exports = {
     "semi": "off",
     "@typescript-eslint/semi": ["off"],
     "@typescript-eslint/no-var-requires": "off",
-    "max-len": ["error", { "code": 150 }]
+    "max-len": ["error", { "code": 250 }]
   },
 };
