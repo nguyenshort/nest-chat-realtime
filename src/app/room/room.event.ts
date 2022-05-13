@@ -12,6 +12,8 @@ import {
 import { Cache } from 'cache-manager'
 import { CacheKey } from '@cache/cache.key'
 
+// Todo: Nếu online và off trên các ip khác nhau => sai dữ liệu
+
 @Injectable()
 export class RoomEvents {
   constructor(

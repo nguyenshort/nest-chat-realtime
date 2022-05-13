@@ -27,5 +27,9 @@ export class MessageEvent {
     const _room = await this.roomService.update(message.room, {
       updatedAt: Date.now()
     })
+
+    await this.pubSub.publish(ChanelEnum.MY_ROOMS, {
+      subMyRooms: { room: _room, messages: [message] }
+    })
   }
 }

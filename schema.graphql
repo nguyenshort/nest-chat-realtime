@@ -192,6 +192,7 @@ type Subscription {
   subUserOnline(userID: String!): UserOnline!
   roomSubMessage(roomID: String!, userID: String!): Message!
   roomOnlines(roomID: String!, userID: String!): RoomOnlines!
+  subMyRooms(userID: String!): RoomMessages!
 }
 
 type Token {

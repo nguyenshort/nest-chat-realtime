@@ -23,6 +23,7 @@ import { IRoomJoinEvent, IRoomLeftEvent } from '@app/room/types/events'
 import { withCancel } from '@apollo/with-cancel'
 import { UserDocument } from '@app/users/entities/user.entity'
 import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
+import { RoomMessages } from "@app/room/entities/room-messages.entity";
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -167,6 +168,16 @@ export class RoomResolver {
         this.eventEmitter.emit('room:left', { room, user } as IRoomLeftEvent)
       }
     )
+  }
+
+  @Subscription(() => RoomMessages)
+  @UseGuards(SubscriptionGuard)
+  async subMyRooms(
+    @Args('userID', new InputValidator()) userID: string,
+    @SubscriptionLicense() license: LicenseDocument
+  ) {
+    await this.#getUserByID(userID, license)
+    return this.pubSub.asyncIterator(ChanelEnum.MY_ROOMS)
   }
 
   /**
