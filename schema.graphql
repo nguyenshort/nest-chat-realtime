@@ -143,6 +143,7 @@ type Mutation {
   messageSend(input: CreateMessageInput!, roomId: String!): Message!
   messageRead(input: ReadMessageInput!): [Message!]!
   roomCreate(input: CreateRoomInput!): Room!
+  roomUpsert(input: UpserRoomInput!): Room!
   roomKick(input: KickRoomInput!): Room!
   roomAdd(input: AddToRoomInput!): Room!
 }
@@ -205,6 +206,11 @@ input UpdateUserInput {
 
   """ảnh đại diện người dùng"""
   avatar: String
+}
+
+input UpserRoomInput {
+  """Mảng User Data"""
+  users: [CreateUserInput!]!
 }
 
 input UpsertUsersInput {

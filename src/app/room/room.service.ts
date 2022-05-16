@@ -38,7 +38,11 @@ export class RoomService implements IRoomServices {
     skip: number,
     limit: number
   ): Promise<RoomDocument[]> {
-    return this.roomModel.find(filter).skip(skip).limit(limit)
+    return this.roomModel
+      .find(filter)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limit)
   }
 
   // pipeline quá nhiều

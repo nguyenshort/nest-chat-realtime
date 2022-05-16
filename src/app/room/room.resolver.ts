@@ -23,7 +23,8 @@ import { IRoomJoinEvent, IRoomLeftEvent } from '@app/room/types/events'
 import { withCancel } from '@apollo/with-cancel'
 import { UserDocument } from '@app/users/entities/user.entity'
 import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
-import { RoomMessages } from "@app/room/entities/room-messages.entity";
+import { RoomMessages } from '@app/room/entities/room-messages.entity'
+import { UpserRoomInput } from '@app/room/dto/upsert-room.input'
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -81,6 +82,31 @@ export class RoomResolver {
     )
 
     return this.roomService.create(license, _users, input)
+  }
+
+  @Mutation(() => Room)
+  @UseGuards(JWTAuthGuard)
+  async roomUpsert(
+    @Args('input', new InputValidator()) input: UpserRoomInput,
+    @CurrentLicense() license: LicenseDocument
+  ) {
+    const _users = await Promise.all(
+      input.users.map((user) =>
+        this.userService.upsert(license, { name: '', userID: user.userID })
+      )
+    )
+
+    const _room = await this.roomService.getOne({
+      license: license._id,
+      users: _users.map((user) => user._id)
+    })
+
+    if (_room) return _room
+
+    return this.roomService.create(license, _users, {
+      avatar: '',
+      name: 'Room Chat'
+    })
   }
 
   @Mutation(() => Room)
