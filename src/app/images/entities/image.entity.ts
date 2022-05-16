@@ -1,9 +1,7 @@
-import { ObjectType, Field, ID, Float } from '@nestjs/graphql'
+import { ObjectType, Field } from '@nestjs/graphql'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { User, UserDocument } from '@app/users/entities/user.entity'
-import { Document, Types } from 'mongoose'
-import { Room, RoomDocument } from '@app/room/entities/room.entity'
-import { License, LicenseDocument } from '@app/license/entities/license.entity'
+import { Document } from 'mongoose'
+import { Attach } from '@shared/attach/entities/attach.entity'
 
 export type ImageDocument = Image & Document
 
@@ -18,44 +16,10 @@ export type ImageDocument = Image & Document
   }
 })
 @ObjectType()
-export class Image {
-  @Field(() => ID)
-  id: string
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: User.name,
-    autopopulate: true,
-    index: true
-  })
-  @Field(() => User)
-  from: UserDocument
-
+export class Image extends Attach {
   @Prop()
   @Field(() => [String])
   images: string[]
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: Room.name,
-    autopopulate: true,
-    index: true
-  })
-  @Field(() => Room)
-  room: RoomDocument
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: License.name,
-    autopopulate: true,
-    index: true
-  })
-  @Field(() => License)
-  license: LicenseDocument
-
-  @Prop()
-  @Field(() => Float)
-  createdAt: number
 }
 
 export const ImageEntity = SchemaFactory.createForClass(Image)

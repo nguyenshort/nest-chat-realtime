@@ -34,7 +34,10 @@ export class InboxResolver {
       )
     }
 
-    const _room = await this.roomService.getOne({ _id: filter.roomID })
+    const _room = await this.roomService.getOne({
+      _id: filter.roomID,
+      license: license._id
+    })
     if (!_room) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
@@ -67,11 +70,9 @@ export class InboxResolver {
       timer.lte = messs[0].createdAt
     }
 
-    const _images = await this.imagesService.findMany(
-      { room: _room._id },
-      timer.gte,
-      timer.lte
-    )
+    const [_images] = await Promise.all([
+      this.imagesService.findMany({ room: _room._id }, timer.gte, timer.lte)
+    ])
 
     return [...messs, ..._images]
   }

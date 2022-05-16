@@ -5,10 +5,13 @@ import { Image, ImageDocument } from '@app/images/entities/image.entity'
 import { LicenseDocument } from '@app/license/entities/license.entity'
 import { RoomDocument } from '@app/room/entities/room.entity'
 import { IImageCreate } from '@app/images/types/service'
+import { AttachService } from '@shared/attach/attach.service'
 
 @Injectable()
-export class ImagesService {
-  constructor(@InjectModel(Image.name) private model: Model<ImageDocument>) {}
+export class ImagesService extends AttachService {
+  constructor(@InjectModel(Image.name) readonly model: Model<ImageDocument>) {
+    super(model)
+  }
 
   async create(
     license: LicenseDocument,
