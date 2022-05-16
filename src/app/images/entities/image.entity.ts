@@ -5,7 +5,7 @@ import { Document, Types } from 'mongoose'
 import { Room, RoomDocument } from '@app/room/entities/room.entity'
 import { License, LicenseDocument } from '@app/license/entities/license.entity'
 
-export type FileDocument = File & Document
+export type ImageDocument = Image & Document
 
 @Schema({
   toJSON: {
@@ -18,7 +18,7 @@ export type FileDocument = File & Document
   }
 })
 @ObjectType()
-export class File {
+export class Image {
   @Field(() => ID)
   id: string
 
@@ -32,8 +32,8 @@ export class File {
   from: UserDocument
 
   @Prop()
-  @Field(() => String)
-  file: string
+  @Field(() => [String])
+  images: string[]
 
   @Prop({
     type: Types.ObjectId,
@@ -58,4 +58,4 @@ export class File {
   createdAt: number
 }
 
-export const FileEntity = SchemaFactory.createForClass(File)
+export const ImageEntity = SchemaFactory.createForClass(Image)

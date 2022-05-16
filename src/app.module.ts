@@ -12,6 +12,8 @@ import { UsersModule } from '@app/users/users.module'
 import { LicenseModule } from '@app/license/license.module'
 import { MessageModule } from '@app/message/message.module'
 import { RoomModule } from '@app/room/room.module'
+import { FilesModule } from './app/files/files.module';
+import { ImagesModule } from './app/images/images.module';
 
 @Module({
   imports: [
@@ -24,7 +26,9 @@ import { RoomModule } from '@app/room/room.module'
     UsersModule,
     LicenseModule,
     MessageModule,
-    RoomModule
+    RoomModule,
+    FilesModule,
+    ImagesModule
   ],
   controllers: [AppController],
   providers: [AppService]
