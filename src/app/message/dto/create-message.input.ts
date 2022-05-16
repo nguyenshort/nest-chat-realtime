@@ -1,12 +1,8 @@
 import { InputType, Field } from '@nestjs/graphql'
-import { IsNotEmpty } from 'class-validator'
+import { CreateAttachInput } from '@shared/attach/dto/create-attach.input'
 
 @InputType()
-export class CreateMessageInput {
-  @IsNotEmpty()
-  @Field(() => String, { description: 'User ID người gửi' })
-  from: string
-
+export class CreateMessageInput extends CreateAttachInput {
   @Field(() => String, { description: 'Nội dung tin nhắn', nullable: true })
   content: string
 }

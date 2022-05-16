@@ -18,16 +18,19 @@ import { ReadMessageInput } from '@app/message/dto/read-message.input'
 import { GetMessagesInput } from '@app/message/dto/messages.input'
 import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
 import { RoomMessages } from '@app/room/entities/room-messages.entity'
+import { AttachResolver } from '@shared/attach/attach.resolver'
 
 @Resolver(() => Message)
-export class MessageResolver {
+export class MessageResolver extends AttachResolver {
   constructor(
-    private readonly messageService: MessageService,
-    private readonly usersService: UsersService,
-    private readonly roomService: RoomService,
+    readonly messageService: MessageService,
+    readonly usersService: UsersService,
+    readonly roomService: RoomService,
     @Inject(PUB_SUB) private pubSub: RedisPubSub,
     private eventEmitter: EventEmitter2
-  ) {}
+  ) {
+    super(messageService, usersService, roomService)
+  }
 
   @Mutation(() => Message)
   @UseGuards(JWTAuthGuard)
@@ -36,31 +39,15 @@ export class MessageResolver {
     @Args('roomId', new InputValidator()) roomId: string,
     @CurrentLicense() license: LicenseDocument
   ) {
-    const _user = await this.usersService.findOne({
-      userID: input.from,
-      license: license._id
-    })
-    if (!_user) {
-      throw new ForbiddenError('To send message, you must be logged in')
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(roomId)) {
-      throw new ForbiddenError(
-        'You are not allowed to send message to this room'
-      )
-    }
-
-    const _room = await this.roomService.getOne({ _id: roomId })
-    if (!_room) {
-      throw new ForbiddenError(
-        'You are not allowed to send message to this room'
-      )
-    }
-
-    const message = await this.messageService.create(license, _room, {
-      from: _user,
-      content: input.content
-    })
+    const message = await super.attachSend<CreateMessageInput>(
+      input,
+      license,
+      roomId,
+      (user) => ({
+        from: user._id,
+        content: input.content
+      })
+    )
 
     this.eventEmitter.emit('message:added', { message })
 
@@ -143,16 +130,17 @@ export class MessageResolver {
 
   @Query(() => [RoomMessages])
   @UseGuards(JWTAuthGuard)
-  async getRooms(@Args('input', new InputValidator()) input: GetRoomsInput) {
-    const _user = await this.usersService.findOne({ userID: input.userID })
-    if (!_user) {
-      throw new ForbiddenError('User not found')
-    }
+  async getRooms(
+    @Args('input', new InputValidator()) input: GetRoomsInput,
+    @CurrentLicense() license: LicenseDocument
+  ) {
+    const _user = await super.getUser(input.userID, license)
     const _rooms = await this.roomService.getMany(
       { users: _user._id },
       input.offset,
       input.limit
     )
+
     return Promise.all(
       _rooms.map(async (room) => ({
         room,

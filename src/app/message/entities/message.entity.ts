@@ -5,6 +5,7 @@ import { Document, Types } from 'mongoose'
 import { ReadAt } from '@app/message/entities/readAt.entity'
 import { Room, RoomDocument } from '@app/room/entities/room.entity'
 import { License, LicenseDocument } from '@app/license/entities/license.entity'
+import { Attach } from '@shared/attach/entities/attach.entity'
 
 export type MessageDocument = Message & Document
 
@@ -19,40 +20,10 @@ export type MessageDocument = Message & Document
   }
 })
 @ObjectType()
-export class Message {
-  @Field(() => ID)
-  id: string
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: User.name,
-    autopopulate: true,
-    index: true
-  })
-  @Field(() => User)
-  from: UserDocument
-
+export class Message extends Attach {
   @Prop()
   @Field(() => String)
   content: string
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: Room.name,
-    autopopulate: true,
-    index: true
-  })
-  @Field(() => Room)
-  room: RoomDocument
-
-  @Prop({
-    type: Types.ObjectId,
-    ref: License.name,
-    autopopulate: true,
-    index: true
-  })
-  @Field(() => License)
-  license: LicenseDocument
 
   @Prop({
     default: [],
@@ -71,10 +42,6 @@ export class Message {
   })
   @Field(() => [ReadAt])
   readAt: ReadAt[]
-
-  @Prop()
-  @Field(() => Float)
-  createdAt: number
 }
 
 export const MessageEntity = SchemaFactory.createForClass(Message)

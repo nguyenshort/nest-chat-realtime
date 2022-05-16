@@ -19,4 +19,24 @@ export class AttachService {
       createdAt: Date.now()
     })
   }
+
+  async findMany(
+    filter: object,
+    gte: number,
+    lte: number
+  ): Promise<AttachDocument[]> {
+    return this.model
+      .find({
+        ...filter,
+        createdAt: {
+          // lớn hơn hoặc bằng
+          $gte: gte,
+          // nhỏ hơn hoặc abnwgf
+          $lte: lte
+        }
+      })
+      .sort({
+        createdAt: 1
+      })
+  }
 }

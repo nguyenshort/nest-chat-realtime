@@ -17,6 +17,7 @@ import { RoomModule } from '@app/room/room.module'
     UsersModule,
     RoomModule
   ],
-  providers: [FilesResolver, FilesService]
+  providers: [FilesResolver, FilesService],
+  exports: [FilesService]
 })
 export class FilesModule {}

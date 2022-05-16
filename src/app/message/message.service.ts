@@ -6,25 +6,14 @@ import { IMessageCreate } from '@app/message/types/service'
 import { UserDocument } from '@app/users/entities/user.entity'
 import { LicenseDocument } from '@app/license/entities/license.entity'
 import { RoomDocument } from '@app/room/entities/room.entity'
+import { AttachService } from '@shared/attach/attach.service'
 
 @Injectable()
-export class MessageService {
+export class MessageService extends AttachService {
   constructor(
-    @InjectModel(Message.name) private model: Model<MessageDocument>
-  ) {}
-
-  async create(
-    license: LicenseDocument,
-    room: RoomDocument,
-    input: IMessageCreate
-  ): Promise<MessageDocument> {
-    return this.model.create({
-      from: input.from._id,
-      content: input.content,
-      room: room._id,
-      license: license._id,
-      createdAt: Date.now()
-    })
+    @InjectModel(Message.name) readonly model: Model<MessageDocument>
+  ) {
+    super(model)
   }
 
   /**

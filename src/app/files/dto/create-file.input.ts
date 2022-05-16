@@ -1,11 +1,8 @@
-import { InputType, Int, Field } from '@nestjs/graphql'
-import { IsNotEmpty } from 'class-validator'
+import { InputType, Field } from '@nestjs/graphql'
+import { CreateAttachInput } from '@shared/attach/dto/create-attach.input'
 
 @InputType()
-export class CreateFileInput {
-  @IsNotEmpty()
-  @Field(() => String, { description: 'User ID người gửi' })
-  from: string
+export class CreateFileInput extends CreateAttachInput {
   @Field(() => String, { description: 'link file', nullable: true })
   file: string
 }

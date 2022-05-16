@@ -12,12 +12,14 @@ import { ForbiddenError } from 'apollo-server-express'
 import { RoomService } from '@app/room/room.service'
 import { MessageService } from '@app/message/message.service'
 import { ImagesService } from '@app/images/images.service'
+import { FilesService } from '@app/files/files.service'
 
 @Resolver(() => Inbox)
 export class InboxResolver {
   constructor(
     private readonly inboxService: InboxService,
     private readonly roomService: RoomService,
+    private readonly filesService: FilesService,
     private readonly imagesService: ImagesService,
     private readonly messageService: MessageService
   ) {}
@@ -27,7 +29,7 @@ export class InboxResolver {
   async inboxsGet(
     @Args('filter', new InputValidator()) filter: GetInboxsInput,
     @CurrentLicense() license: LicenseDocument
-  ): Promise<Array<typeof InboxUnion>> {
+  ) {
     if (!mongoose.Types.ObjectId.isValid(filter.roomID)) {
       throw new ForbiddenError(
         'You are not allowed to send message to this room'
@@ -70,10 +72,13 @@ export class InboxResolver {
       timer.lte = messs[0].createdAt
     }
 
-    const [_images] = await Promise.all([
-      this.imagesService.findMany({ room: _room._id }, timer.gte, timer.lte)
+    const [_images, _files] = await Promise.all([
+      this.imagesService.findMany({ room: _room._id }, timer.gte, timer.lte),
+      this.filesService.findMany({ room: _room._id }, timer.gte, timer.lte)
     ])
 
-    return [...messs, ..._images]
+    return [...messs, ..._images, ..._files].sort(
+      (a, b) => a.createdAt - b.createdAt
+    )
   }
 }

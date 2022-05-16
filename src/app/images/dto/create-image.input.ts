@@ -1,5 +1,4 @@
 import { InputType, Field } from '@nestjs/graphql'
-import { IsNotEmpty } from 'class-validator'
 import { CreateAttachInput } from '@shared/attach/dto/create-attach.input'
 
 @InputType()
