@@ -12,6 +12,8 @@ import { RoomService } from '@app/room/room.service'
 import { PUB_SUB } from '@apollo/pubsub.module'
 import { RedisPubSub } from 'graphql-redis-subscriptions'
 import { EventEmitter2 } from '@nestjs/event-emitter'
+import { ForbiddenError } from 'apollo-server-express'
+import mongoose from 'mongoose'
 
 @Resolver(() => Image)
 export class ImagesResolver {
@@ -25,11 +27,35 @@ export class ImagesResolver {
 
   @Mutation(() => Image)
   @UseGuards(JWTAuthGuard)
-  imageMessageSend(
-    @Args('input', new InputValidator())
-    input: CreateImageInput,
-    @CurrentLicense() license: LicenseDocument
+  async imageMessageSend(
+    @Args('input', new InputValidator()) input: CreateImageInput,
+    @CurrentLicense() license: LicenseDocument,
+    @Args('roomId', new InputValidator()) roomId: string
   ) {
-    console.log(license)
+    const _user = await this.usersService.findOne({
+      userID: input.from,
+      license: license._id
+    })
+    if (!_user) {
+      throw new ForbiddenError('To send message, you must be logged in')
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(roomId)) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+
+    const _room = await this.roomService.getOne({ _id: roomId })
+    if (!_room) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+
+    return this.imagesService.create(license, _room, {
+      from: _user,
+      images: input.images
+    })
   }
 }

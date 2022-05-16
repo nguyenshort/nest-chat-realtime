@@ -18,6 +18,7 @@ import { MessageEvent } from '@app/message/message.event'
     UsersModule,
     RoomModule
   ],
-  providers: [MessageResolver, MessageService, MessageEvent]
+  providers: [MessageResolver, MessageService, MessageEvent],
+  exports: [MessageService]
 })
 export class MessageModule {}

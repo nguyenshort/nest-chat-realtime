@@ -14,6 +14,7 @@ import { MessageModule } from '@app/message/message.module'
 import { RoomModule } from '@app/room/room.module'
 import { FilesModule } from './app/files/files.module';
 import { ImagesModule } from './app/images/images.module';
+import { InboxModule } from './app/inbox/inbox.module';
 
 @Module({
   imports: [
@@ -28,7 +29,8 @@ import { ImagesModule } from './app/images/images.module';
     MessageModule,
     RoomModule,
     FilesModule,
-    ImagesModule
+    ImagesModule,
+    InboxModule
   ],
   controllers: [AppController],
   providers: [AppService]

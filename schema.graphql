@@ -58,7 +58,7 @@ input CreateImageInput {
   from: String!
 
   """Hình ảnh tin nhắn"""
-  content: [String!]!
+  images: [String!]!
 }
 
 input CreateLicenseInput {
@@ -103,6 +103,17 @@ type File {
   room: Room!
   license: License!
   createdAt: Float!
+}
+
+input GetInboxsInput {
+  """Room ID"""
+  roomID: String!
+
+  """Giới hạn"""
+  limit: Int!
+
+  """Skip"""
+  offset: Int!
 }
 
 input GetMessagesInput {
@@ -180,7 +191,7 @@ type Mutation {
   createFile(createFileInput: CreateFileInput!): File!
   updateFile(updateFileInput: UpdateFileInput!): File!
   removeFile(id: Int!): File!
-  imageMessageSend(input: CreateImageInput!): Image!
+  imageMessageSend(input: CreateImageInput!, roomId: String!): Image!
 }
 
 type Query {
@@ -191,6 +202,7 @@ type Query {
   roomGet(roomID: String!, userID: String!): Room!
   files: [File!]!
   file(id: Int!): File!
+  inboxsGet(filter: GetInboxsInput!): [ResultUnion!]!
 }
 
 type ReadAt {
@@ -205,6 +217,8 @@ input ReadMessageInput {
   """ID người đọc"""
   userID: String!
 }
+
+union ResultUnion = Message | Image | File
 
 type Room {
   id: ID!

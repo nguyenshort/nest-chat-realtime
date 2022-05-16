@@ -1,26 +1,46 @@
-import { Injectable } from '@nestjs/common';
-import { CreateImageInput } from './dto/create-image.input';
-import { UpdateImageInput } from './dto/update-image.input';
+import { Injectable } from '@nestjs/common'
+import { InjectModel } from '@nestjs/mongoose'
+import { Model } from 'mongoose'
+import { Image, ImageDocument } from '@app/images/entities/image.entity'
+import { LicenseDocument } from '@app/license/entities/license.entity'
+import { RoomDocument } from '@app/room/entities/room.entity'
+import { IImageCreate } from '@app/images/types/service'
 
 @Injectable()
 export class ImagesService {
-  create(createImageInput: CreateImageInput) {
-    return 'This action adds a new image';
+  constructor(@InjectModel(Image.name) private model: Model<ImageDocument>) {}
+
+  async create(
+    license: LicenseDocument,
+    room: RoomDocument,
+    input: IImageCreate
+  ) {
+    return this.model.create({
+      from: input.from._id,
+      images: input.images,
+      room: room._id,
+      license: license._id,
+      createdAt: Date.now()
+    })
   }
 
-  findAll() {
-    return `This action returns all images`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} image`;
-  }
-
-  update(id: number, updateImageInput: UpdateImageInput) {
-    return `This action updates a #${id} image`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} image`;
+  async findMany(
+    filter: object,
+    gte: number,
+    lte: number
+  ): Promise<ImageDocument[]> {
+    return this.model
+      .find({
+        ...filter,
+        createdAt: {
+          // lớn hơn hoặc bằng
+          $gte: gte,
+          // nhỏ hơn hoặc abnwgf
+          $lte: lte
+        }
+      })
+      .sort({
+        createdAt: 1
+      })
   }
 }

@@ -8,5 +8,5 @@ export class CreateImageInput {
   from: string
 
   @Field(() => [String], { description: 'Hình ảnh tin nhắn' })
-  content: string[]
+  images: string[]
 }
