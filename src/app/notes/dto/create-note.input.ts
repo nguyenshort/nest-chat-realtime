@@ -1,7 +1,8 @@
-import { InputType, Int, Field } from '@nestjs/graphql';
+import { InputType, Field } from '@nestjs/graphql'
+import { CreateAttachInput } from '@shared/attach/dto/create-attach.input'
 
 @InputType()
-export class CreateNoteInput {
-  @Field(() => Int, { description: 'Example field (placeholder)' })
-  exampleField: number;
+export class CreateNoteInput extends CreateAttachInput {
+  @Field(() => String, { description: 'Nọi dung gi chú' })
+  note: string
 }
