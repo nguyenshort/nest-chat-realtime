@@ -60,13 +60,7 @@ export class MessageResolver extends AttachResolver {
     @Args('input', new InputValidator()) input: ReadMessageInput,
     @CurrentLicense() license: LicenseDocument
   ) {
-    const _user = await this.usersService.findOne({
-      userID: input.userID,
-      license: license._id
-    })
-    if (!_user) {
-      throw new ForbiddenError('To send message, you must be logged in')
-    }
+    const _user = await super.getUser(input.userID, license)
 
     if (!mongoose.Types.ObjectId.isValid(input.anchor)) {
       throw new ForbiddenError(
@@ -100,6 +94,7 @@ export class MessageResolver extends AttachResolver {
     })
   }
 
+  // todo: remove => inbox
   @Query(() => [Message])
   @UseGuards(JWTAuthGuard)
   async messagesByRoom(
