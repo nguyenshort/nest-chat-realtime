@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose'
 import { Attach } from '@shared/attach/entities/attach.entity'
 
-export type NoteDocument = File & Document
+export type NoteDocument = Note & Document
 
 @Schema({
   toJSON: {

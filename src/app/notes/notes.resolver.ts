@@ -1,7 +1,6 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql'
 import { Note } from './entities/note.entity'
 import { AttachResolver } from '@shared/attach/attach.resolver'
-import { FilesService } from '@app/files/files.service'
 import { UsersService } from '@app/users/users.service'
 import { RoomService } from '@app/room/room.service'
 import { UseGuards } from '@nestjs/common'
@@ -10,15 +9,16 @@ import { InputValidator } from '@shared/validator/input.validator'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
 import { CreateNoteInput } from '@app/notes/dto/create-note.input'
+import { NotesService } from '@app/notes/notes.service'
 
 @Resolver(() => Note)
 export class NotesResolver extends AttachResolver {
   constructor(
-    readonly filesService: FilesService,
+    readonly notesService: NotesService,
     readonly usersService: UsersService,
     readonly roomService: RoomService
   ) {
-    super(filesService, usersService, roomService)
+    super(notesService, usersService, roomService)
   }
 
   @Mutation(() => Note)
