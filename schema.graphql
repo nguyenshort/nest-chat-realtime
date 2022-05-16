@@ -49,8 +49,11 @@ input CreateConnectInput {
 }
 
 input CreateFileInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """User ID người gửi"""
+  from: String!
+
+  """link file"""
+  file: String
 }
 
 input CreateImageInput {
@@ -99,10 +102,10 @@ input CreateUserInput {
 type File {
   id: ID!
   from: User!
-  file: String!
   room: Room!
   license: License!
   createdAt: Float!
+  file: String!
 }
 
 input GetInboxsInput {
@@ -140,10 +143,10 @@ input GetRoomsInput {
 type Image {
   id: ID!
   from: User!
-  images: [String!]!
   room: Room!
   license: License!
   createdAt: Float!
+  images: [String!]!
 }
 
 input KickRoomInput {
@@ -164,11 +167,11 @@ type License {
 type Message {
   id: ID!
   from: User!
-  content: String!
   room: Room!
   license: License!
-  readAt: [ReadAt!]!
   createdAt: Float!
+  content: String!
+  readAt: [ReadAt!]!
 }
 
 type Mutation {
@@ -188,9 +191,7 @@ type Mutation {
   roomUpsert(input: UpserRoomInput!): Room!
   roomKick(input: KickRoomInput!): Room!
   roomAdd(input: AddToRoomInput!): Room!
-  createFile(createFileInput: CreateFileInput!): File!
-  updateFile(updateFileInput: UpdateFileInput!): File!
-  removeFile(id: Int!): File!
+  fileCreate(input: CreateFileInput!, roomId: String!): File!
   imageMessageSend(input: CreateImageInput!, roomId: String!): Image!
 }
 
@@ -200,8 +201,6 @@ type Query {
   messagesByRoom(filter: GetMessagesInput!): [Message!]!
   getRooms(input: GetRoomsInput!): [RoomMessages!]!
   roomGet(roomID: String!, userID: String!): Room!
-  files: [File!]!
-  file(id: Int!): File!
   inboxsGet(filter: GetInboxsInput!): [ResultUnion!]!
 }
 
@@ -249,12 +248,6 @@ type Subscription {
 
 type Token {
   token: String!
-}
-
-input UpdateFileInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
 }
 
 input UpdateUserInput {

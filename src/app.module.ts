@@ -12,9 +12,10 @@ import { UsersModule } from '@app/users/users.module'
 import { LicenseModule } from '@app/license/license.module'
 import { MessageModule } from '@app/message/message.module'
 import { RoomModule } from '@app/room/room.module'
-import { FilesModule } from './app/files/files.module';
-import { ImagesModule } from './app/images/images.module';
-import { InboxModule } from './app/inbox/inbox.module';
+import { FilesModule } from '@app/files/files.module'
+import { ImagesModule } from '@app/images/images.module'
+import { InboxModule } from '@app/inbox/inbox.module'
+import { NotesModule } from '@app/notes/notes.module'
 
 @Module({
   imports: [
@@ -30,7 +31,8 @@ import { InboxModule } from './app/inbox/inbox.module';
     RoomModule,
     FilesModule,
     ImagesModule,
-    InboxModule
+    InboxModule,
+    NotesModule
   ],
   controllers: [AppController],
   providers: [AppService]
