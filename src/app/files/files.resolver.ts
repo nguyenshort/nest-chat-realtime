@@ -11,10 +11,13 @@ import { RoomService } from '@app/room/room.service'
 import { UseGuards } from '@nestjs/common'
 import { JWTAuthGuard } from '@guards/jwt.guard'
 import { AttachResolver } from '@shared/attach/attach.resolver'
+import { IInboxAdded, InboxEventEnum } from '@app/inbox/types/event'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Resolver(() => File)
 export class FilesResolver extends AttachResolver {
   constructor(
+    private eventEmitter: EventEmitter2,
     readonly filesService: FilesService,
     readonly usersService: UsersService,
     readonly roomService: RoomService
@@ -29,7 +32,7 @@ export class FilesResolver extends AttachResolver {
     @Args('roomId', new InputValidator()) roomId: string,
     @CurrentLicense() license: LicenseDocument
   ) {
-    return super.attachSend<CreateFileInput>(
+    const file = await super.attachSend<CreateFileInput>(
       input,
       license,
       roomId,
@@ -38,5 +41,12 @@ export class FilesResolver extends AttachResolver {
         file: input.file
       })
     )
+
+    this.eventEmitter.emit(InboxEventEnum.ADD, {
+      attach: file,
+      type: 'message'
+    } as IInboxAdded)
+
+    return file
   }
 }

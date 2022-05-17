@@ -4,7 +4,8 @@ enum ChanelEnum {
   ROOM_STATUS = 'ROOM_STATUS',
   USER_ONLINE = 'USER_ONLINE',
   ROOM_ONLINES = 'ROOM_ONLINES',
-  MY_ROOMS = 'MY_ROOMS'
+  MY_ROOMS = 'MY_ROOMS',
+  NEW_INBOX = 'NEW_INBOX'
 }
 
 export default ChanelEnum

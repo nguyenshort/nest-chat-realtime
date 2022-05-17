@@ -12,10 +12,13 @@ import { RoomService } from '@app/room/room.service'
 import { PUB_SUB } from '@apollo/pubsub.module'
 import { RedisPubSub } from 'graphql-redis-subscriptions'
 import { AttachResolver } from '@shared/attach/attach.resolver'
+import { IInboxAdded, InboxEventEnum } from '@app/inbox/types/event'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 
 @Resolver(() => Image)
 export class ImagesResolver extends AttachResolver {
   constructor(
+    private eventEmitter: EventEmitter2,
     @Inject(PUB_SUB) private pubSub: RedisPubSub,
     readonly attchService: ImagesService,
     readonly usersService: UsersService,
@@ -31,7 +34,7 @@ export class ImagesResolver extends AttachResolver {
     @CurrentLicense() license: LicenseDocument,
     @Args('roomId', new InputValidator()) roomId: string
   ) {
-    return super.attachSend<CreateImageInput>(
+    const image = await super.attachSend<CreateImageInput>(
       input,
       license,
       roomId,
@@ -40,5 +43,12 @@ export class ImagesResolver extends AttachResolver {
         images: input.images
       })
     )
+
+    this.eventEmitter.emit(InboxEventEnum.ADD, {
+      attach: image,
+      type: 'message'
+    } as IInboxAdded)
+
+    return image
   }
 }

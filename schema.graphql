@@ -77,6 +77,14 @@ input CreateMessageInput {
   content: String
 }
 
+input CreateNoteInput {
+  """User ID người gửi"""
+  from: String!
+
+  """Nọi dung gi chú"""
+  note: String!
+}
+
 input CreateRoomInput {
   """Tên nhóm"""
   name: String
@@ -193,6 +201,16 @@ type Mutation {
   roomAdd(input: AddToRoomInput!): Room!
   fileCreate(input: CreateFileInput!, roomId: String!): File!
   imageMessageSend(input: CreateImageInput!, roomId: String!): Image!
+  noteCreate(input: CreateNoteInput!, roomId: String!): Note!
+}
+
+type Note {
+  id: ID!
+  from: User!
+  room: Room!
+  license: License!
+  createdAt: Float!
+  note: String!
 }
 
 type Query {

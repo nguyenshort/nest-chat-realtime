@@ -19,6 +19,7 @@ import { GetMessagesInput } from '@app/message/dto/messages.input'
 import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
 import { RoomMessages } from '@app/room/entities/room-messages.entity'
 import { AttachResolver } from '@shared/attach/attach.resolver'
+import { IInboxAdded, InboxEventEnum } from '@app/inbox/types/event'
 
 @Resolver(() => Message)
 export class MessageResolver extends AttachResolver {
@@ -49,7 +50,10 @@ export class MessageResolver extends AttachResolver {
       })
     )
 
-    this.eventEmitter.emit('message:added', { message })
+    this.eventEmitter.emit(InboxEventEnum.ADD, {
+      attach: message,
+      type: 'message'
+    } as IInboxAdded)
 
     return message
   }
