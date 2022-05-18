@@ -1,9 +1,9 @@
-import { Resolver, Query, Args } from '@nestjs/graphql'
+import { Resolver, Query, Args, Subscription } from '@nestjs/graphql'
 import { InboxService } from './inbox.service'
 import { Inbox, InboxUnion } from './entities/inbox.entity'
 import { GetInboxsInput } from '@app/inbox/dto/inboxs.input'
 import { InputValidator } from '@shared/validator/input.validator'
-import { UseGuards } from '@nestjs/common'
+import { Inject, UseGuards } from '@nestjs/common'
 import { JWTAuthGuard } from '@guards/jwt.guard'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
@@ -13,6 +13,14 @@ import { RoomService } from '@app/room/room.service'
 import { MessageService } from '@app/message/message.service'
 import { ImagesService } from '@app/images/images.service'
 import { FilesService } from '@app/files/files.service'
+import { UsersService } from '@app/users/users.service'
+import { PUB_SUB } from '@apollo/pubsub.module'
+import { RedisPubSub } from 'graphql-redis-subscriptions'
+import ChanelEnum from '@apollo/chanel.enum'
+import { RoomDocument } from '@app/room/entities/room.entity'
+import { AttachDocument } from '@shared/attach/entities/attach.entity'
+import { SubscriptionGuard } from '@guards/subscription.guard'
+import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
 
 @Resolver(() => Inbox)
 export class InboxResolver {
@@ -21,7 +29,9 @@ export class InboxResolver {
     private readonly roomService: RoomService,
     private readonly filesService: FilesService,
     private readonly imagesService: ImagesService,
-    private readonly messageService: MessageService
+    private readonly messageService: MessageService,
+    readonly usersService: UsersService,
+    @Inject(PUB_SUB) private pubSub: RedisPubSub
   ) {}
 
   @Query(() => [InboxUnion])
@@ -53,32 +63,97 @@ export class InboxResolver {
       filter.limit
     )
 
+    // không có tin nhắn
     if (!messs.length) {
-      return []
+      // chưa có tin nhắn -> lấy toàn bộ attach
+      const { images, files } = await this.#getGroupAttach(_room, {
+        gte: _room.createdAt,
+        lte: Date.now()
+      })
+      return this.sortAttatch([...images, ...files])
     }
 
-    const timer = {
-      gte: 0,
-      lte: 0
-    }
+    // có >= 1 tin nhắn
+    const { images, files } = await this.#getGroupAttach(_room, {
+      gte: messs[messs.length - 1].createdAt,
+      lte: filter.offset === 0 ? Date.now() : messs[0].createdAt
+    })
 
-    // => order nhỏ dần => thời gian lớn nhất là đầu tiên => endTime
-    if (messs.length <= 1) {
-      // nếu chỉ có 1 phần tử => khoảng thời gian = tin nhắn đó => hiện tại
-      timer.gte = Date.now()
-      timer.lte = messs[0].createdAt
-    } else {
-      timer.gte = messs[messs.length - 1].createdAt
-      timer.lte = messs[0].createdAt
-    }
+    return this.sortAttatch([...messs, ...images, ...files])
+  }
 
-    const [_images, _files] = await Promise.all([
+  protected sortAttatch(attachs: AttachDocument[]) {
+    return [...attachs].sort((a, b) => a.createdAt - b.createdAt)
+  }
+
+  async #getGroupAttach(
+    _room: RoomDocument,
+    timer: { gte: number; lte: number }
+  ) {
+    const [images, files] = await Promise.all([
       this.imagesService.findMany({ room: _room._id }, timer.gte, timer.lte),
       this.filesService.findMany({ room: _room._id }, timer.gte, timer.lte)
     ])
+    return { images, files }
+  }
 
-    return [...messs, ..._images, ..._files].sort(
-      (a, b) => a.createdAt - b.createdAt
-    )
+  @Subscription(() => Inbox)
+  @UseGuards(SubscriptionGuard)
+  async subNewInbox(
+    @SubscriptionLicense() license: LicenseDocument,
+    @Args('userID') userID: string
+  ) {
+    await this.#getUser(userID, license)
+    return this.pubSub.asyncIterator(ChanelEnum.NEW_INBOX)
+  }
+
+  @Subscription(() => InboxUnion, {
+    filter: (payload, variables) => {
+      return payload.subNewInboxByRoom.room.id === variables.roomID
+    }
+  })
+  @UseGuards(SubscriptionGuard)
+  async subNewInboxByRoom(
+    @SubscriptionLicense() license: LicenseDocument,
+    @Args('userID') userID: string,
+    @Args('roomID') roomID: string
+  ) {
+    await Promise.all([
+      this.#getUser(userID, license),
+      this.#getRoom(roomID, license)
+    ])
+    return this.pubSub.asyncIterator(ChanelEnum.NEW_INBOX_BY_ROOM)
+  }
+
+  async #getUser(userID: string, license: LicenseDocument) {
+    const _user = await this.usersService.findOne({
+      userID,
+      license: license._id
+    })
+    if (!_user) {
+      throw new ForbiddenError('To send message, you must be logged in')
+    }
+
+    return _user
+  }
+
+  async #getRoom(roomID: string, license: LicenseDocument) {
+    if (!mongoose.Types.ObjectId.isValid(roomID)) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+
+    const _room = await this.roomService.getOne({
+      _id: roomID,
+      license: license._id
+    })
+    if (!_room) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
+
+    return _room
   }
 }

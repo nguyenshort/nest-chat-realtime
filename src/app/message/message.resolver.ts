@@ -126,25 +126,4 @@ export class MessageResolver extends AttachResolver {
       )
     ).reverse()
   }
-
-  @Query(() => [RoomMessages])
-  @UseGuards(JWTAuthGuard)
-  async getRooms(
-    @Args('input', new InputValidator()) input: GetRoomsInput,
-    @CurrentLicense() license: LicenseDocument
-  ) {
-    const _user = await super.getUser(input.userID, license)
-    const _rooms = await this.roomService.getMany(
-      { users: _user._id },
-      input.offset,
-      input.limit
-    )
-
-    return Promise.all(
-      _rooms.map(async (room) => ({
-        room,
-        messages: await this.messageService.getMany({ room: room._id }, 0, 1)
-      }))
-    )
-  }
 }

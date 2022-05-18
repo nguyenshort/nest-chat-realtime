@@ -157,6 +157,11 @@ type Image {
   images: [String!]!
 }
 
+type Inbox {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
 input KickRoomInput {
   roomID: String!
   userIDs: [String!]!
@@ -217,8 +222,8 @@ type Query {
   version: String!
   userOnline(userID: String!): UserOnline!
   messagesByRoom(filter: GetMessagesInput!): [Message!]!
-  getRooms(input: GetRoomsInput!): [RoomMessages!]!
   roomGet(roomID: String!, userID: String!): Room!
+  getRooms(input: GetRoomsInput!): [Room!]!
   inboxsGet(filter: GetInboxsInput!): [ResultUnion!]!
 }
 
@@ -259,9 +264,11 @@ type RoomOnlines {
 type Subscription {
   connect(input: CreateConnectInput!): User!
   subUserOnline(userID: String!): UserOnline!
-  roomSubMessage(roomID: String!, userID: String!): Message!
+  roomSub(roomID: String!, userID: String!): Room!
   roomOnlines(roomID: String!, userID: String!): RoomOnlines!
   subMyRooms(userID: String!): RoomMessages!
+  subNewInbox(userID: String!): Inbox!
+  subNewInboxByRoom(userID: String!, roomID: String!): ResultUnion!
 }
 
 type Token {

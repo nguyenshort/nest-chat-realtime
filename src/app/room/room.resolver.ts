@@ -25,6 +25,7 @@ import { UserDocument } from '@app/users/entities/user.entity'
 import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
 import { RoomMessages } from '@app/room/entities/room-messages.entity'
 import { UpserRoomInput } from '@app/room/dto/upsert-room.input'
+import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -67,6 +68,20 @@ export class RoomResolver {
     } as IRoomJoinEvent)
 
     return _room
+  }
+
+  @Query(() => [Room])
+  @UseGuards(JWTAuthGuard)
+  async getRooms(
+    @Args('input', new InputValidator()) input: GetRoomsInput,
+    @CurrentLicense() license: LicenseDocument
+  ) {
+    const _user = await this.#getUserByID(input.userID, license)
+    return this.roomService.getMany(
+      { users: _user._id },
+      input.offset,
+      input.limit
+    )
   }
 
   @Mutation(() => Room)
@@ -162,8 +177,8 @@ export class RoomResolver {
     })
   }
 
-  @Subscription(() => Message)
-  async roomSubMessage(
+  @Subscription(() => Room)
+  async roomSub(
     @Args('roomID') roomID: string,
     @Args('userID', new InputValidator()) userID: string,
     @SubscriptionLicense() license: LicenseDocument
