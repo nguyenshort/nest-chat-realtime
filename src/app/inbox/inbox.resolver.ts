@@ -66,6 +66,10 @@ export class InboxResolver {
     // không có tin nhắn
     if (!messs.length) {
       // chưa có tin nhắn -> lấy toàn bộ attach
+      if (filter.offset) {
+        return []
+      }
+
       const { images, files } = await this.#getGroupAttach(_room, {
         gte: _room.createdAt,
         lte: Date.now()

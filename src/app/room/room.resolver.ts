@@ -143,11 +143,15 @@ export class RoomResolver {
       userID: { $in: input.userIDs },
       license: license._id
     })
-    return this.roomService.update(_room, {
+    const _newRoom = await this.roomService.update(_room, {
       $pull: {
         users: { $in: _users.map((user) => user._id) }
       }
     })
+
+    this.eventEmitter.emit('room:onlines', { room: _newRoom })
+
+    return _newRoom
   }
 
   @Mutation(() => Room)
