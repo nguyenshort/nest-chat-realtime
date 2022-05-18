@@ -24,24 +24,6 @@ export class Message extends Attach {
   @Prop()
   @Field(() => String)
   content: string
-
-  @Prop({
-    default: [],
-    type: [
-      {
-        user: {
-          type: Types.ObjectId,
-          ref: User.name,
-          autopopulate: true,
-          index: true
-        },
-        time: Number,
-        _id: false
-      }
-    ]
-  })
-  @Field(() => [ReadAt])
-  readAt: ReadAt[]
 }
 
 export const MessageEntity = SchemaFactory.createForClass(Message)

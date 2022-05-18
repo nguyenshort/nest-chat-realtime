@@ -4,6 +4,7 @@ import { User, UserDocument } from '@app/users/entities/user.entity'
 import { Document, Types } from 'mongoose'
 import { Room, RoomDocument } from '@app/room/entities/room.entity'
 import { License, LicenseDocument } from '@app/license/entities/license.entity'
+import { ReadAt } from '@app/message/entities/readAt.entity'
 
 export type AttachDocument = Attach & Document
 
@@ -48,6 +49,24 @@ export class Attach {
   })
   @Field(() => License)
   license: LicenseDocument
+
+  @Prop({
+    default: [],
+    type: [
+      {
+        user: {
+          type: Types.ObjectId,
+          ref: User.name,
+          autopopulate: true,
+          index: true
+        },
+        time: Number,
+        _id: false
+      }
+    ]
+  })
+  @Field(() => [ReadAt], { defaultValue: [] })
+  readAt: ReadAt[]
 
   @Prop()
   @Field(() => Float)
