@@ -127,7 +127,7 @@ export class RoomResolver {
 
     return this.roomService.create(license, _users, {
       avatar: '',
-      name: 'Room Chat'
+      name: ''
     })
   }
 
@@ -206,7 +206,7 @@ export class RoomResolver {
       avatar: input.avatar
     })
 
-    this.eventEmitter.emit('room:onlines', { room } as IRoomOnlinesEvent)
+    this.eventEmitter.emit('room:onlines', { room: _newRoom } as IRoomOnlinesEvent)
     return _newRoom
   }
 

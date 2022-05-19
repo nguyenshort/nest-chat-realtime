@@ -11,11 +11,9 @@ export class UpdateRoomInfoInput {
   @Field(() => String)
   roomID: string
 
-  @IsNotEmpty()
   @Field(() => String)
   name: string
 
-  @IsNotEmpty()
   @Field(() => String)
   avatar: string
 }

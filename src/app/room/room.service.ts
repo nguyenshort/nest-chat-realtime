@@ -29,7 +29,7 @@ export class RoomService implements IRoomServices {
 
   async update(room: RoomDocument, doc: object): Promise<RoomDocument> {
     return this.roomModel.findByIdAndUpdate(room._id, doc, {
-      returnOriginal: true
+      returnOriginal: false
     })
   }
 
