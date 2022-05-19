@@ -40,7 +40,9 @@ directive @connection(
 
 input AddToRoomInput {
   roomID: String!
-  userIDs: [String!]!
+
+  """Mảng User Data"""
+  users: [CreateUserInput!]!
 }
 
 input CreateConnectInput {
@@ -112,6 +114,7 @@ type File {
   from: User!
   room: Room!
   license: License!
+  readAt: [ReadAt!]!
   createdAt: Float!
   file: String!
 }
@@ -153,6 +156,7 @@ type Image {
   from: User!
   room: Room!
   license: License!
+  readAt: [ReadAt!]!
   createdAt: Float!
   images: [String!]!
 }
@@ -182,9 +186,9 @@ type Message {
   from: User!
   room: Room!
   license: License!
+  readAt: [ReadAt!]!
   createdAt: Float!
   content: String!
-  readAt: [ReadAt!]!
 }
 
 type Mutation {
@@ -214,6 +218,7 @@ type Note {
   from: User!
   room: Room!
   license: License!
+  readAt: [ReadAt!]!
   createdAt: Float!
   note: String!
 }

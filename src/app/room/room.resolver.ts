@@ -8,7 +8,6 @@ import { JWTAuthGuard } from '@guards/jwt.guard'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
 import { UsersService } from '@app/users/users.service'
-import { Message } from '@app/message/entities/message.entity'
 import { ForbiddenError } from 'apollo-server-express'
 import mongoose from 'mongoose'
 import { PUB_SUB } from '@apollo/pubsub.module'
@@ -169,10 +168,14 @@ export class RoomResolver {
         'You are not allowed to send message to this room'
       )
     }
-    const _users = await this.userService.findMany({
-      userID: { $in: input.userIDs },
-      license: license._id
-    })
+    const _users = await Promise.all(
+      input.users.map((user) =>
+        this.userService.upsert(license, {
+          name: user.name,
+          userID: user.userID
+        })
+      )
+    )
 
     return this.roomService.update(room, {
       $addToSet: {
