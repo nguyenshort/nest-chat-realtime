@@ -204,10 +204,13 @@ type Mutation {
   userRemove(userID: String!): User!
   messageSend(input: CreateMessageInput!, roomId: String!): Message!
   messageRead(input: ReadMessageInput!): [Message!]!
+
+  """Sẽ xoá trong các version sau"""
   roomCreate(input: CreateRoomInput!): Room!
   roomUpsert(input: UpserRoomInput!): Room!
   roomKick(input: KickRoomInput!): Room!
   roomAdd(input: AddToRoomInput!): Room!
+  roomUpdateInfo(input: UpdateRoomInfoInput!): Room!
   fileCreate(input: CreateFileInput!, roomId: String!): File!
   imageMessageSend(input: CreateImageInput!, roomId: String!): Image!
   noteCreate(input: CreateNoteInput!, roomId: String!): Note!
@@ -278,6 +281,13 @@ type Subscription {
 
 type Token {
   token: String!
+}
+
+input UpdateRoomInfoInput {
+  userID: String!
+  roomID: String!
+  name: String!
+  avatar: String!
 }
 
 input UpdateUserInput {

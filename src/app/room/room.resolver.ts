@@ -18,13 +18,18 @@ import { AddToRoomInput } from '@app/room/dto/add-room.input'
 import { RoomOnlines } from '@app/room/entities/room-info.entity'
 import { SubscriptionGuard } from '@guards/subscription.guard'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { IRoomJoinEvent, IRoomLeftEvent } from '@app/room/types/events'
+import {
+  IRoomJoinEvent,
+  IRoomLeftEvent,
+  IRoomOnlinesEvent
+} from '@app/room/types/events'
 import { withCancel } from '@apollo/with-cancel'
 import { UserDocument } from '@app/users/entities/user.entity'
 import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
 import { RoomMessages } from '@app/room/entities/room-messages.entity'
 import { UpserRoomInput } from '@app/room/dto/upsert-room.input'
 import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
+import { UpdateRoomInfoInput } from '@app/room/dto/update-room-info'
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -83,7 +88,7 @@ export class RoomResolver {
     )
   }
 
-  @Mutation(() => Room)
+  @Mutation(() => Room, { description: 'Sẽ xoá trong các version sau' })
   @UseGuards(JWTAuthGuard)
   async roomCreate(
     @Args('input', new InputValidator()) input: CreateRoomInput,
@@ -91,7 +96,7 @@ export class RoomResolver {
   ) {
     const _users = await Promise.all(
       input.users.map((user) =>
-        this.userService.upsert(license, { name: '', userID: user })
+        this.userService.upsert(license, { name: input.name, userID: user })
       )
     )
 
@@ -106,7 +111,10 @@ export class RoomResolver {
   ) {
     const _users = await Promise.all(
       input.users.map((user) =>
-        this.userService.upsert(license, { name: '', userID: user.userID })
+        this.userService.upsert(license, {
+          name: user.name,
+          userID: user.userID
+        })
       )
     )
 
@@ -184,6 +192,24 @@ export class RoomResolver {
     })
   }
 
+  @Mutation(() => Room)
+  @UseGuards(JWTAuthGuard)
+  async roomUpdateInfo(
+    @CurrentLicense() license: LicenseDocument,
+    @Args('input', new InputValidator()) input: UpdateRoomInfoInput
+  ) {
+    const user = await this.#getUserByID(input.userID, license)
+    const room = await this.#getRoomByID(input.roomID, license, user)
+
+    const _newRoom = await this.roomService.update(room, {
+      name: input.name,
+      avatar: input.avatar
+    })
+
+    this.eventEmitter.emit('room:onlines', { room } as IRoomOnlinesEvent)
+    return _newRoom
+  }
+
   @Subscription(() => Room)
   async roomSub(
     @Args('roomID') roomID: string,
@@ -205,11 +231,6 @@ export class RoomResolver {
   ) {
     const user = await this.#getUserByID(userID, license)
     const room = await this.#getRoomByID(roomID, license, user)
-    //Bắn về chính event sau 1 giây
-    setTimeout(() => {
-      // Do something after 1 second
-      this.eventEmitter.emit('room:joined', { room, user } as IRoomJoinEvent)
-    }, 2000)
     return withCancel(
       this.pubSub.asyncIterator(ChanelEnum.ROOM_ONLINES),
       () => {
