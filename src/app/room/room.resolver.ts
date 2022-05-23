@@ -185,11 +185,16 @@ export class RoomResolver {
       )
     )
 
-    return this.roomService.update(room, {
+    const newRoom = await this.roomService.update(room, {
       $addToSet: {
         users: { $each: _users.map((user) => user._id) }
       }
     })
+
+    this.eventEmitter.emit('room:onlines', {
+      room: newRoom
+    } as IRoomOnlinesEvent)
+    return newRoom
   }
 
   @Mutation(() => Room)
@@ -206,7 +211,9 @@ export class RoomResolver {
       avatar: input.avatar
     })
 
-    this.eventEmitter.emit('room:onlines', { room: _newRoom } as IRoomOnlinesEvent)
+    this.eventEmitter.emit('room:onlines', {
+      room: _newRoom
+    } as IRoomOnlinesEvent)
     return _newRoom
   }
 
