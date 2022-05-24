@@ -8,6 +8,10 @@ export class ReadMessageInput {
   anchor: string
 
   @IsNotEmpty()
+  @Field(() => String, { description: '' })
+  room: string
+
+  @IsNotEmpty()
   @Field(() => String, { description: 'ID người đọc' })
   userID: string
 }

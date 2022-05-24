@@ -16,8 +16,6 @@ import mongoose from 'mongoose'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { ReadMessageInput } from '@app/message/dto/read-message.input'
 import { GetMessagesInput } from '@app/message/dto/messages.input'
-import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
-import { RoomMessages } from '@app/room/entities/room-messages.entity'
 import { AttachResolver } from '@shared/attach/attach.resolver'
 import { IInboxAdded, InboxEventEnum } from '@app/inbox/types/event'
 
@@ -77,14 +75,30 @@ export class MessageResolver extends AttachResolver {
       license: license._id
     })
 
-    if (!_anchor) {
-      throw new ForbiddenError('You message is not valid')
+    let _anchorTime = Date.now()
+    let _room = undefined
+
+    if (_anchor) {
+      // đọc tin nhắn gần nhất
+      _anchorTime = _anchor.createdAt
+      _room = _anchor.room._id
+    } else {
+      // lấy room
+      const _roomFind = await this.getRoom(input.room, license)
+      if (_roomFind) {
+        _room = _roomFind._id
+      }
     }
 
+    if (!_room) {
+      throw new ForbiddenError(
+        'You are not allowed to send message to this room'
+      )
+    }
     // Danh sách tin nhắn chưa đọc tính từ điểm neo _anchor <=
     const _messages = await this.messageService.findMany({
-      room: _anchor.room._id,
-      createdAt: { $lte: _anchor.createdAt },
+      room: _room,
+      createdAt: { $lte: _anchorTime },
       'readAt.user': { $ne: _user._id }
     })
 
