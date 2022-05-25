@@ -246,7 +246,7 @@ export class RoomResolver {
     )
   }
 
-  @Subscription(() => RoomMessages)
+  @Subscription(() => Room)
   @UseGuards(SubscriptionGuard)
   async subMyRooms(
     @Args('userID', new InputValidator()) userID: string,

@@ -34,6 +34,9 @@ export class InboxEvent {
       this.pubSub.publish(ChanelEnum.NEW_INBOX, { subInbox: attach }),
       this.pubSub.publish(ChanelEnum.NEW_INBOX_BY_ROOM, {
         subNewInboxByRoom: attach
+      }),
+      this.pubSub.publish(ChanelEnum.MY_ROOMS, {
+        subMyRooms: _room
       })
     ])
   }

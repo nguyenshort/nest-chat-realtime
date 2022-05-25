@@ -112,7 +112,6 @@ export class MessageResolver extends AttachResolver {
     })
   }
 
-  // todo: remove => inbox
   @Query(() => [Message])
   @UseGuards(JWTAuthGuard)
   async messagesByRoom(
