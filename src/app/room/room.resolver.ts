@@ -26,7 +26,6 @@ import {
 import { withCancel } from '@apollo/with-cancel'
 import { UserDocument } from '@app/users/entities/user.entity'
 import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
-import { RoomMessages } from '@app/room/entities/room-messages.entity'
 import { UpserRoomInput } from '@app/room/dto/upsert-room.input'
 import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
 import { UpdateRoomInfoInput } from '@app/room/dto/update-room-info'
@@ -246,7 +245,11 @@ export class RoomResolver {
     )
   }
 
-  @Subscription(() => Room)
+  @Subscription(() => Room, {
+    /*filter: (payload, variables) => {
+      return payload.subNewInboxByRoom.users.indexOf((e))
+    }*/
+  })
   @UseGuards(SubscriptionGuard)
   async subMyRooms(
     @Args('userID', new InputValidator()) userID: string,
