@@ -232,6 +232,7 @@ type Query {
   messagesByRoom(filter: GetMessagesInput!): [Message!]!
   roomGet(roomID: String!, userID: String!): Room!
   getRooms(input: GetRoomsInput!): [Room!]!
+  getRoomCalling(roomID: String!): [String!]!
   inboxsGet(filter: GetInboxsInput!): [ResultUnion!]!
 }
 
@@ -243,6 +244,7 @@ type ReadAt {
 input ReadMessageInput {
   """Điểm neo"""
   anchor: String!
+  room: String!
 
   """ID người đọc"""
   userID: String!
@@ -259,11 +261,6 @@ type Room {
   updatedAt: Float
 }
 
-type RoomMessages {
-  room: Room!
-  messages: [Message!]!
-}
-
 type RoomOnlines {
   room: Room!
   onlines: [String!]!
@@ -274,7 +271,10 @@ type Subscription {
   subUserOnline(userID: String!): UserOnline!
   roomSub(roomID: String!, userID: String!): Room!
   roomOnlines(roomID: String!, userID: String!): RoomOnlines!
-  subMyRooms(userID: String!): RoomMessages!
+  subWaitingCall(userID: String!): Room!
+  subMyRooms(userID: String!): Room!
+  subCallingRooms(roomID: String!): [String!]!
+  subCalling(roomID: String!, userID: String!): [String!]!
   subNewInbox(userID: String!): Inbox!
   subNewInboxByRoom(userID: String!, roomID: String!): ResultUnion!
 }

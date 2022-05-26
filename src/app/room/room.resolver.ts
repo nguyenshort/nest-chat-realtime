@@ -1,9 +1,16 @@
-import { Resolver, Mutation, Args, Subscription, Query } from '@nestjs/graphql'
+import {
+  Resolver,
+  Mutation,
+  Args,
+  Subscription,
+  Query,
+  Int
+} from '@nestjs/graphql'
 import { RoomService } from './room.service'
 import { Room } from './entities/room.entity'
 import { CreateRoomInput } from './dto/create-room.input'
 import { InputValidator } from '@shared/validator/input.validator'
-import { Inject, UseGuards } from '@nestjs/common'
+import { CACHE_MANAGER, Inject, UseGuards } from '@nestjs/common'
 import { JWTAuthGuard } from '@guards/jwt.guard'
 import { CurrentLicense } from '@decorators/license.decorator'
 import { LicenseDocument } from '@app/license/entities/license.entity'
@@ -29,6 +36,7 @@ import { SubscriptionLicense } from '@decorators/subscription-license.decorator'
 import { UpserRoomInput } from '@app/room/dto/upsert-room.input'
 import { GetRoomsInput } from '@app/room/dto/rooms-get.input'
 import { UpdateRoomInfoInput } from '@app/room/dto/update-room-info'
+import { Cache } from 'cache-manager'
 
 @Resolver(() => Room)
 export class RoomResolver {
@@ -36,7 +44,8 @@ export class RoomResolver {
     private readonly roomService: RoomService,
     private readonly userService: UsersService,
     @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache
   ) {}
 
   @Query(() => Room)
@@ -245,11 +254,16 @@ export class RoomResolver {
     )
   }
 
-  @Subscription(() => Room, {
-    /*filter: (payload, variables) => {
-      return payload.subNewInboxByRoom.users.indexOf((e))
-    }*/
-  })
+  @Subscription(() => Room, {})
+  @UseGuards(SubscriptionGuard)
+  async subWaitingCall(
+    @Args('userID', new InputValidator()) userID: string,
+    @SubscriptionLicense() license: LicenseDocument
+  ) {
+    return this.pubSub.asyncIterator(ChanelEnum.WAITING_CALLING)
+  }
+
+  @Subscription(() => Room, {})
   @UseGuards(SubscriptionGuard)
   async subMyRooms(
     @Args('userID', new InputValidator()) userID: string,
@@ -257,6 +271,87 @@ export class RoomResolver {
   ) {
     await this.#getUserByID(userID, license)
     return this.pubSub.asyncIterator(ChanelEnum.MY_ROOMS)
+  }
+
+  @Subscription(() => [String])
+  async subCallingRooms(@Args('roomID') roomID: string) {
+    return this.pubSub.asyncIterator(ChanelEnum.JOIN_CALL)
+  }
+
+  @Subscription(() => [String])
+  async subCalling(
+    @Args('roomID') roomID: string,
+    @Args('userID') userID: string
+  ) {
+    // khi kết nôi => vào
+    await this.joinCall(roomID, userID)
+
+    return withCancel(
+      this.pubSub.asyncIterator(ChanelEnum.CALLING, {}),
+      async () => {
+        await this.leftCall(roomID, userID)
+      }
+    )
+  }
+
+  @Query(() => [String])
+  async getRoomCalling(@Args('roomID') roomID: string) {
+    const roomCall = await this.cache.get<string[]>(`calling-${roomID}`)
+    return roomCall || []
+  }
+
+  async joinCall(
+    @Args('roomID') roomID: string,
+    @Args('userID') userID: string
+  ) {
+    const roomCall = await this.cache.get<string[]>(`calling-${roomID}`)
+
+    const newcalling = [userID]
+
+    if (roomCall) {
+      newcalling.push(...roomCall)
+    }
+
+    await this.pubSub.publish(ChanelEnum.JOIN_CALL, {
+      subCallingRooms: newcalling
+    })
+    // bắn sự kiện call tới mọi user trong phòng nếu là tạo phòng gọi ==> length = 1
+    if (newcalling.length === 1) {
+      const room = await this.roomService.getOne({ _id: roomID })
+
+      console.log(newcalling)
+
+      await this.pubSub.publish(ChanelEnum.WAITING_CALLING, {
+        subWaitingCall: room
+      })
+    }
+
+    await this.cache.set<string[]>(`calling-${roomID}`, newcalling)
+
+    return newcalling
+  }
+
+  async leftCall(
+    @Args('roomID') roomID: string,
+    @Args('userID') userID: string
+  ) {
+    const roomCall = await this.cache.get<string[]>(`calling-${roomID}`)
+
+    if (!roomCall) {
+      return []
+    }
+
+    const _index = roomCall.indexOf(userID)
+
+    const _newCalling = roomCall.filter((_, index) => _index !== index)
+
+    await this.pubSub.publish(ChanelEnum.JOIN_CALL, {
+      subCallingRooms: _newCalling
+    })
+
+    await this.cache.set<string[]>(`calling-${roomID}`, _newCalling)
+
+    return _newCalling
   }
 
   /**
