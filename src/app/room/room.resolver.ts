@@ -254,7 +254,13 @@ export class RoomResolver {
     )
   }
 
-  @Subscription(() => Room, {})
+  @Subscription(() => Room, {
+    filter: (payload, variables) => {
+      return payload.subWaitingCall.users.indexOf(
+        (e) => e.userID === variables.userID
+      )
+    }
+  })
   @UseGuards(SubscriptionGuard)
   async subWaitingCall(
     @Args('userID', new InputValidator()) userID: string,
