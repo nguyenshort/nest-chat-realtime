@@ -263,7 +263,13 @@ export class RoomResolver {
     return this.pubSub.asyncIterator(ChanelEnum.WAITING_CALLING)
   }
 
-  @Subscription(() => Room, {})
+  @Subscription(() => Room, {
+    filter: (payload, variables) => {
+      return payload.subMyRooms.users.indexOf(
+        (e) => e.userID === variables.userID
+      )
+    }
+  })
   @UseGuards(SubscriptionGuard)
   async subMyRooms(
     @Args('userID', new InputValidator()) userID: string,

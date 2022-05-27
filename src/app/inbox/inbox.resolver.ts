@@ -90,7 +90,11 @@ export class InboxResolver {
     return [...attachs].sort((a, b) => a.createdAt - b.createdAt)
   }
 
-  @Subscription(() => InboxUnion)
+  @Subscription(() => InboxUnion, {
+    filter: (payload, variables) => {
+      return payload.subUpdatingInbox.room.id === variables.roomID
+    }
+  })
   async subUpdatingInbox(@Args('roomID') roomID: string) {
     return this.pubSub.asyncIterator(ChanelEnum.UPDATING_INBOX)
   }
