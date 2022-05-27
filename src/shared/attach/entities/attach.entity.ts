@@ -41,6 +41,10 @@ export class Attach {
   @Field(() => Room)
   room: RoomDocument
 
+  @Prop({ type: Boolean })
+  @Field(() => Boolean, { nullable: true, defaultValue: false })
+  isRecall: boolean
+
   @Prop({
     type: Types.ObjectId,
     ref: License.name,

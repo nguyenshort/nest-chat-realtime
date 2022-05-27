@@ -20,6 +20,15 @@ export class AttachService {
     })
   }
 
+  // Todo: Đổi tên hhamf
+  async removeById(id: string) {
+    return this.model.findByIdAndUpdate(
+      id,
+      { isRecall: true },
+      { returnOriginal: false }
+    )
+  }
+
   async findMany(
     filter: object,
     gte: number,

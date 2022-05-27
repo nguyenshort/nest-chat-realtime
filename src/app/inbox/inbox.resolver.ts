@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Subscription } from '@nestjs/graphql'
+import { Resolver, Query, Args, Subscription, Mutation } from '@nestjs/graphql'
 import { InboxService } from './inbox.service'
 import { Inbox, InboxUnion } from './entities/inbox.entity'
 import { GetInboxsInput } from '@app/inbox/dto/inboxs.input'
@@ -90,6 +90,30 @@ export class InboxResolver {
     return [...attachs].sort((a, b) => a.createdAt - b.createdAt)
   }
 
+  @Subscription(() => InboxUnion)
+  async subUpdatingInbox(@Args('roomID') roomID: string) {
+    return this.pubSub.asyncIterator(ChanelEnum.UPDATING_INBOX)
+  }
+
+  @Mutation(() => InboxUnion)
+  async removeInbox(@Args('id') id: string, @Args('group') group: string) {
+    let _inbox = {}
+
+    if (group === 'message') {
+      _inbox = await this.messageService.removeById(id)
+    } else if (group === 'images') {
+      _inbox = await this.imagesService.removeById(id)
+    } else if (group === 'files') {
+      _inbox = await this.filesService.removeById(id)
+    }
+
+    await this.pubSub.publish(ChanelEnum.UPDATING_INBOX, {
+      subUpdatingInbox: _inbox
+    })
+
+    return _inbox
+  }
+
   async #getGroupAttach(
     _room: RoomDocument,
     timer: { gte: number; lte: number }
@@ -101,6 +125,7 @@ export class InboxResolver {
     return { images, files }
   }
 
+  // hàm bị sai
   @Subscription(() => Inbox)
   @UseGuards(SubscriptionGuard)
   async subNewInbox(
